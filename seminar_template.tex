@@ -223,20 +223,56 @@ Inserting this factorisation into the definition of $\mu_{x_m \rightarrow f_s}(x
 
 We have now induced how a marginal distribution $p(x_i)$ can be expressed by local messages passed between factors and variables through the factor graph. For leave nodes those messages can be stated explicitely.
 For a variable node as leave of the factor graph equation \ref{eq:product_of_neighbours3} shows that the message, the node sends to its only neighbor, is given by
-\begin{equation}\label{eq:product_of_neighbours3}
+\begin{equation}\label{eq:marg_init_1}
 \mu_{x \rightarrow f}(x) = 1.
 \end{equation}
 Similarly, from equation \ref{eq:product_of_neighbours2} then concludes the initial value
-\begin{equation}\label{eq:product_of_neighbours3}
+\begin{equation}\label{eq:marg_init_2}
 \mu_{f \rightarrow x}(x) = f(x)
 \end{equation}
 for a message from a leave factor node to its neighbouring variable node.
 
-Having explicit start values for messages from the leaves, messages can propagated through the factor graphs to an arbitrarly chosen root node. This root node has then recieved messages from all its neighbours and can thus calculate its marginal distribution according to \ref{eq:message1}. Analogously, passing all messages back from the root to all leave nodes enables to calculate the marginals of all variables in the factor graph. For this calculation two time the number of edges in the factor graph many messages have to be computed, which is linear in the number of variables of the model.  
-\textcolor{red}{todo: marginal of a factor formula}
+Having explicit start values for messages from the leaves, messages can propagated through the factor graphs to an arbitrarily chosen root node. This root node has then received messages from all its neighbours and can thus calculate its marginal distribution according to \ref{eq:message1}. Analogously, passing all messages back from the root to all leave nodes enables to calculate the marginals of all variables in the factor graph. For this calculation two time the number of edges in the factor graph many messages have to be computed, which is linear in the number of variables of the model.
+\textcolor{red}{todo: marginal of a factor formula, connection to EM-algorithm, continuous RVs}
 
 
-\subsection{Maximum Apriori Estimate}
+\subsection{Maximum a posteriori estimation}
+Next to computing marginal distributions, a frequent task is to find maximum a maximum a posteriori estimate. The aim is to finding values for all random variables, which maximize the joint probability distribution and can be formulated mathematically as
+\begin{equation}\label{eq:map_problem}
+X^* = \underset{X}{\arg\max}~ p(X) = \underset{X}{\arg\max}~ \ln (p(X)).
+\end{equation}
+The value for the maximal joint probability is given by
+\begin{equation}\label{eq:map_problem2}
+p(X^*) = \underset{X}{\max}~ \ln (p(X)).
+\end{equation}
+
+
+The actual algorithms works similarly to the sum-product algorithm from the previous chapter, but with the exception that maximizations instead of sums over the random variables are performed. Analogously to before, the idea behind is to insert the factorized expression of the joint distribution from equation \ref{eq:product_of_neighbours} into the problem formulation from equation \ref{eq:map_problem2} and exchange maximization and multiplication.
+
+The second step of equation \ref{eq:map_problem} contains a transformation, which allows a simplification. Since the logarithm is a strictly monotonic increasing function, it does not change the optimum $X^*$ but transforms the products in the messages to sums. Thus, the algorithm derived in this section is not called "max-product", which the analogy to the max-sum algorithm would suggest, but "max-sum" algorithm.
+
+Applying all discussed modification to the formulas deduced in the last chapter leads to the following messages:
+\begin{equation}\label{eq:map_m1}
+\begin{split}
+\mu_{f_s \rightarrow x_i}(x_i) = \max_{X_s \setminus x_i} \Big[f_s(x_i, X_s) \sum_{m \in ne(f_s) \setminus x_i} \mu_{x_m \rightarrow f_s}(x_m) \Big]
+\end{split}
+\end{equation}
+
+\begin{equation}\label{eq:map_m2}
+\begin{split}
+\mu_{x_m \rightarrow f_s}(x_m) = \sum_{l \in ne(x_m) \setminus f_s} \mu_{f_l \rightarrow x_m}(x_m)
+\end{split}
+\end{equation}
+
+Also the message initializations for leave nodes from equation \ref{eq:marg_init_1} and \ref{eq:marg_init_2} must be adjusted with the logarithm, resulting in
+\begin{equation}\label{eq:marg_init_1}
+\mu_{x \rightarrow f}(x) = 0,
+\end{equation}
+\begin{equation}\label{eq:marg_init_2}
+\mu_{f \rightarrow x}(x) = \ln(f(x)).
+\end{equation}
+By propagation messages from all leave nodes to an arbitrarily chosen root node, the maximal value of the joint probability distribution can be calculated in that root node. The message passing is again done in a fashion, that a node can forward its message to its parent node as soon it has received messages from all children.
+
 Problemformulierung
 max-sum-algorithms
 
