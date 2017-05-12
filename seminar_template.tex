@@ -273,17 +273,43 @@ Also the message initializations for leave nodes from equation \ref{eq:marg_init
 \end{equation}
 By propagation messages from all leave nodes to an arbitrarily chosen root node, the maximal value of the joint probability distribution can be calculated in that root node. The message passing is again done in a fashion, that a node can forward its message to its parent node as soon it has received messages from all children.
 
-Problemformulierung
-max-sum-algorithms
+The missing step is to find the variable configuration for the maximal joint probability. The central maximization is performed in equation \ref{eq:map_m1} over the variables of each factor before its message is passed further to the root. By saving the maximal configuration of each factor at this step, the values of the variables which give rise to the maximal joint probability can be obtained. In contrast to the sum-product algorithm, the max-sum algorithm does not require to propagate messages back from the root to all leaves.
 
 \subsection{Inference in general graphs}
 loopy belief propagation
 
 \section{Approximate inference}
+This chapter presents by the expectation propagation (EP) algorithm a method for approximate inference. In the following section the algorithm and its methodology are explained at first. Secondly it is applied to graphical models which came already up in the previous chapters. At last a general discussion and outlook of EP is given.
+
 Known as expectation propagation, similar to variational inference
 Minimize KL-divergence using moment matching.
 Interesting properties different from standard VI
 \subsection{Methodology}
+Similar to variational inference in EP the true distribution $p(\mathbf{z})$ of a model is approximated by a simpler distribution $q(\mathbf{z})$. The approximation is computed and measured by minimizing the Kullback-Leibler divergence of the two functions. However, while in VI $KL(q||p)$ is considered, EP swaps the distributions and aims a minimizing $KL(p||q)$.
+
+For $q(\mathbf{z})$ a member of the exponential family with the form
+\begin{equation}\label{eq:ep1}
+q(\mathbf{z}) = h(\mathbf{z})g(\mathbf{\eta}) \exp(\mathbf{\eta}^T(u(\mathbf{z}))).
+\end{equation}
+With that the KL divergence becomes
+\begin{equation}\label{eq:ep2}
+KL(p||q)= - \ln g(\eta) - \eta^T \mathbf{E}_{p(\mathbf{z})} [u(\mathbf{z})] + const.
+\end{equation}
+The distribution $q(\mathbf{z})$ which minimizes this KL divergence from equation \ref{eq:ep2} can be constructed by moment matching. If $q(\mathbf{z})$ is a Gaussian for example, its mean corresponds to the mean of $p(\mathbf{z})$ and its covariance is equal to the covariance of $p(\mathbf{z})$.
+
+For the concrete EP algorithm we consider a model of hidden variables and parameters $\theta$ and observed data $\mathbf{D}$. Similarly to the previous chapter we assume that the joint distribution can be written as a product of factors $f_i$:
+\begin{equation}\label{eq:ep3}
+p(\mathbf{D}, \theta) = \prod_i f_i(\theta).
+\end{equation}
+The goal is then to approximate the posterior distribution $p(\theta|\mathbf{D})$, which can be expressed by the joint distribution and the evidence $p(\mathbf{D})$:
+\begin{equation}\label{eq:ep4}
+p(\theta|\mathbf{D}) = \frac{1}{p(\mathbf{D})} \prod_i f_i(\theta),
+\end{equation}
+with 
+\begin{equation}\label{eq:ep5}
+p(\mathbf{D}) = \int \prod_i f_i(\theta) d\theta.
+\end{equation}
+\textcolor{red}{evtl. Footnote to refernce}.  
 \subsection{Expectation propagation in graphical models}
 
 \section{Summary and outlook}
