@@ -340,7 +340,18 @@ With respect to approximation function of the EP algorithm an interpretation can
 Another approach to incorporate some extent of generalization to expectation propagation is to refine a set of factors together within one iteration of the algorithm. However, for both methods there are still open research question how to find the best amount of independence for the approximation function of EP as well as the optimal grouping of factors for simultaneous refinement.
 
 \subsection{Discussion}
+A key disadvantage of expectation propagation is that is not guaranteed to converge. For the exponential family the resulting divergence function is proven to have stationary point, but the iteration of EP might not reach it.
 
+Variational inference in contrast provides a lower bound in each optimization step and thus guarantees to converge. However, EP can nevertheless be a powerful inference method. Because variational inference operates with a lower bound it often underestimates the variance of the true distribution. Therefore, if expectation propagation converges, it often outperforms other variational methods. On the other hand, if the algorithm does not converge, it might be for a good reason an the chosen exponential family approximates the true posterior only poorly.
+
+Another aspect leading to conceptually different behavior between expectation propagation and variational inference comes from the approach, the KL divergence is minimized. Expectation propagation minimizes $KL(p||q)$, while variational inference aims at reducing $KL(q||p)$. For multimodal distribution this leads to significantly wore results for expectation propagation. Since the EP algorithm tries to incorporate all modes of the underlying probability distribution it can approximate function with more than one modes only badly. This is visualized in figure \ref{fig:multimodal}, which is taken from \cite{bishop2006prml}.
+
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[scale=0.12]{multimodal_approximation.png}
+		\caption{Approximation of a multimodal distribution by a) minimizing $KL(p||q)$, b) minimizing $KL(q||p)$ and c) same approach as b) but with a different result.}\label{fig:multimodal}
+	\end{center}
+\end{figure}
 \section{Summary and outlook}
 
 
