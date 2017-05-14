@@ -276,6 +276,13 @@ By propagation messages from all leave nodes to an arbitrarily chosen root node,
 The missing step is to find the variable configuration for the maximal joint probability. The central maximization is performed in equation \ref{eq:map_m1} over the variables of each factor before its message is passed further to the root. By saving the maximal configuration of each factor at this step, the values of the variables which give rise to the maximal joint probability can be obtained. In contrast to the sum-product algorithm, the max-sum algorithm does not require to propagate messages back from the root to all leaves.
 
 \subsection{Inference in general graphs}
+The inference methods discussed only produce valid results for trees. However, since the algorithms only consist of local messages passed through the graph, it can also be applied to graphs which contain circles. This is called "loopy belief propagation". To do so, all messages need to be initialized by the unit function and a message passing schedule must state the order in which the messages are passed through the graph.
+
+With circles in the graph, loopy belief propagation is not guaranteed to converge. In some situations it produces only poor results, while in other situations the final outcome turned out to be quite accurate. Certain error-correcting codes for example are equivalent to loopy belief propagation.
+
+There are also algorithms, which generalize the message passing idea to work for arbitrary graphs. The junction tree algorithm for example 
+
+E.g. certain error-correcting cores
 loopy belief propagation
 
 \section{Approximate inference}
