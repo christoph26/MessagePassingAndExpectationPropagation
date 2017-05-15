@@ -45,16 +45,16 @@ Probabilistic graphical models like Markov Random Fields or Bayesian Networks pr
 	\caption{Bayesian network with three variables. $x_1$ and $x_3$ are conditionally independent given $x_2$.}\label{fig:BN}
 \end{figure}
 
-Typical tasks in such a scenario are to do Bayesian inference to extract marginal distribution of specific variables or find maximum apriori estimates. However, with an increasing number of variables these task can become computationally very expensive. 
+Typical tasks in such a scenario are to do Bayesian inference to extract marginal distributions of specific variables or find maximum apriori estimates. However, with an increasing number of variables these task can become computationally very expensive. 
 
-The naive approach for marginalisation is to sum out all but one variable from the joint distribution $p(X)$. This is formally shown in equation \ref{eq:marginalisation_naive}, where $X \setminus x_i$ describes the set of all random variables expect $x_i$.
-This strategy requires exponentially in the number of variables many evaluations of the joint distribution and is thus not applicable to bigger networks.
+The naive approach for marginalisation is to sum out all but one variable from the joint distribution $p(X)$. This is formally shown in equation \ref{eq:marginalisation_naive}, where $X \setminus x_i$ describes the set of all random variables except $x_i$.
+This strategy requires exponentially many evaluations of the joint distribution in the number of variables and is thus not applicable to bigger networks.
 \begin{equation}\label{eq:marginalisation_naive}
-p(x_i)= \sum_{X \setminus x_i} p(\mathbf{x})
+p(x_i)= \sum_{X \setminus x_i} p(X)
 \end{equation}
-Therefore, this paper explains more efficient algorithms to do large scale Bayesian inference in graphical models. The next chapter $todo$ deals with exact inference and presents two message passing algorithms to calculate marginals and maximum apriori estimates for graphical models. Subsequently, in chapter $todo$ expectation propagation as a method of approximate inference is explained.
+Therefore, this paper explains more efficient algorithms to do large scale Bayesian inference in graphical models. The next chapter \ref{chapter:exact_inference} deals with exact inference and presents two message passing algorithms to calculate marginals and maximum apriori estimates for graphical models. Subsequently, in chapter \ref{chapter:approximate_inference} expectation propagation as a method of approximate inference is explained.
 
-\section{Exact inference}
+\section{Exact inference}\label{chapter:exact_inference}
 The intuition of the algorithms presented in this section is to exploit independence properties of the random variables. Graphical models define the joint probability to be expressed as a product of factors, considering the conditional independences expressed by the graph. For Bayesian networks those factors correspond to conditional distributions, in Markov Random Fields to clique potentials. Assuming appropriately normalized factors, the joint distribution can be written as a product according to equation \ref{eq:product_of_factors}. The index $s$ iterates here over all factors of the graph; $X_s$ defines the subset of variables, the factor $s$ depends on.
 \begin{equation}\label{eq:product_of_factors}
 p(X)= \prod_{s} f_s(X_s)
@@ -69,23 +69,48 @@ Here, the sum of products from the naive approach for marginalization is transfo
 
 The brackets in the last line of equation \ref{eq:marginalization_smart} reveal a powerful interpretation of the marginalizing. The marginal distribution $p(x_2)$ consists of two messages $\mu_{x_1 \rightarrow x_2}$ and $\mu_{x_3 \rightarrow x_2}$ from its neighboring cells $x_1$ and $x_3$. For a longer chain of random variables these messages would again be comprised by messages from their neighboring cell. Applied to a chain of arbitrary length, this method gives a recursive pattern in which messages for the marginalization are sent to the marginalized variable node from both ends of the chain.  
 
-This message passing idea is the foundation for the two inference algorithms presented in this chapter subsequently. Before that the next section introduces factor graphs, the structure these algorithms operate on.
+This message passing idea is the foundation for the two inference algorithms presented in this chapter subsequently. Before the methods are explained in detail, the next section introduces factor graphs, the structure these algorithms operate on.
 
 \subsection{Factor graphs}
-Factor graphs make the factorisation of a joint probability distribution explicit. The can be generated from Bayesian networks as well as from Markov random fields and thus allow to define inference algorithms independent of how the underlying probabilistic graphical model was introduced.
+Factor graphs make the factorization of a joint probability distribution explicit. The can be generated from Bayesian networks as well as from Markov random fields and thus allow to define inference algorithms independent of how the underlying probabilistic graphical model was introduced.
 
-Additional to the variable nodes, a factor graph also consists of factor nodes representing the factors of the decomposed joint probability distribution as in equation  \ref{eq:product_of_factors}. Edges connect the factor nodes to all variables they depend on. By this way they a bipartite graph with variable nodes (usually visualised by circles) on the one side and and factors (depicted as rectangles) on the other side.
+Additional to the variable nodes, a factor graph also consists of factor nodes representing the factors of the decomposed joint probability distribution as in equation  \ref{eq:product_of_factors}. Edges connect the factor nodes to all variables they depend on. By this way they a bipartite graph with variable nodes (usually visualizes by circles) on the one side and and factors (depicted as rectangles) on the other side.
 
-Depending on the exact factorisation, a distribution defined by a Bayesian network or Markov random field can be represented by different factor graphs. Figure $todo$ depicts a factor graph of the Bayesian network from figure \ref{fig:BN}, in which all conditional distribution are represented by separate factors.
+Depending on the exact factorization, a distribution defined by a Bayesian network or Markov random field can be represented by different factor graphs. Figure \ref{fig:FG} depicts a factor graph of the Bayesian network from figure \ref{fig:BN}, in which all conditional distributions are represented by separate factors.
 
-The inference algorithms on factor graphs of the following sections are valid for trees. Such factor graphs with exactly one path between any pair of nodes can be generated from undirected trees in the case of a Markov random field model as well as from from directed trees and polytrees, if the factor graph is derived from a Bayesian network. More detailed description how to derive factor graph from probabilistic graph models can be found in \textcolor{red}{todo: add reference}.
+\begin{figure}[h]
+	\centering
+	\begin{tikzpicture}
+	
+	\tikzset{vertex/.style = {shape=circle,draw,minimum size=1.5em}}
+	\tikzset{edge/.style = {-,> = latex'}}
+	
+	\node[vertex] (x1) at  (0,0) {$x_1$};
+	\node[vertex] (x2) at  (2,0) {$x_2$};
+	\node[vertex] (x3) at  (4,0) {$x_3$};
+	
+	\tikzset{vertex/.style = {shape = rectangle,fill = gray!40,minimum size=2em}}
+	\node[vertex] (f1) at  (-1,2) {$f_1$};
+	\node[vertex] (f2) at  (1,2) {$f_2$};
+	\node[vertex] (f3) at  (3,2) {$f_3$};
+	
+	\draw[edge] (x1) to (f1);
+	\draw[edge] (x1) to (f2);
+	\draw[edge] (x2) to (f2);
+	\draw[edge] (x2) to (f3);
+	\draw[edge] (x3) to (f3);
+	\end{tikzpicture}
+	\caption{Factor graph of the Bayesian network from figure \ref{fig:BN}. The factors $f_1$, $f_2$ and $f_3$ correspond to the probability distributions $p(x_1)$, $p(x_2|x_1)$ and $p(x_3|x_2$.)}\label{fig:FG}
+\end{figure}
+
+The inference algorithms on factor graphs of the following sections are valid for trees. Such factor graphs with exactly one path between any pair of nodes can be generated from undirected trees in the case of a Markov random field model as well as from from directed trees and polytrees, if the factor graph is derived from a Bayesian network. More detailed description how to derive factor graph from probabilistic graph models can be found in \cite{bishop2006prml}.\footnote{Chapter 8.3.2 for the moralization step of undirected models and chapter 8.4.3 for the concrete buildup of a factor graph from a graphical model.}
 
 
 
 \subsection{Marginalization}
-The sum-product algorithm presented in this section generalises the idea of exchanging summation and multiplication during marginalisation. It consists of local messages passed between factor and variable nodes in a factor graph.
+The sum-product algorithm presented in this section generalizes the idea of exchanging summation and multiplication during marginalization. It consists of local messages passed between factor and variable nodes in a factor graph.
 
-As a starting point let us consider the calculation of the marginal distribution $p(x_i)$ in the factor graph of figure \ref{fig:message1}. Furthermore we define $F_s(s, X_s)$ for all neighbours $s$ of $x_i$ as the product of all factors in the respective sub-tree of the neighbour. This is visualised by blue circles in figure \ref{fig:message1}.
+As a starting point let us consider the calculation of the marginal distribution $p(x_i)$ in the factor graph of figure \ref{fig:message1}. Furthermore we define $F_s(s, X_s)$ for all neighbors $s$ of $x_i$ as the product of all factors in the respective sub-tree of the neighbor. This is visualized by green circles in figure \ref{fig:message1}.
 \begin{figure}[h]
 	\centering
 	\begin{tikzpicture}
@@ -117,22 +142,22 @@ As a starting point let us consider the calculation of the marginal distribution
 	\draw[edge, loosely dotted] (xr1) to (xr2);
 	\draw[edge, loosely dotted] (xl1) to (xl2);
 	\end{tikzpicture}
-	\caption{Exemplary factor graph to deduce the messages of the sum-product algorithm.}\label{fig:message1}
+	\caption{Exemplary factor graph to visualize the deduction of an expression for the marginal distribution of $x_i$ in equation \ref{eq:message1}. The green circles define for all neighbors of $x_i$ the product of all factors in the respective sub-tree and support the expression of the joint distribution in equation \ref{eq:product_of_neighbours}.}\label{fig:message1}
 \end{figure}
 
-Analogous to the general factorisation defined by the graphical model from equation \ref{eq:product_of_factors} the joint probability $p(\mathbf{x})$ can then be expressed as a product of those neighbour-factor of $x_i$:
+Analogous to the general factorization defined by the graphical model from equation \ref{eq:product_of_factors} the joint probability $p(X)$ can then be expressed as a product of those neighbor-factor of $x_i$:
 \begin{equation}\label{eq:product_of_neighbours}
 p(X)= \prod_{s \in ne(x_i)} F_s(x_i, X_s)
 \end{equation}
-Inserting this representation of the joint distribution in the naive marginalisation formula from equation \ref{eq:marginalisation_naive} allows to exchange sum and product. By this way the marginal distribution of $x_i$ is expressed as the product of messages $\mu_{f_s \rightarrow x_i}$ from all its neighbours in the factor graph:
+Inserting this representation of the joint distribution in the naive marginalization formula from equation \ref{eq:marginalisation_naive} allows to exchange sum and product. By this way the marginal distribution of $x_i$ is expressed as the product of messages $\mu_{f_s \rightarrow x_i}$ from all its neighbors in the factor graph:
 \begin{equation}\label{eq:message1}
 \begin{split}
-p(x_i) &= \sum_{X \setminus x_i} \Big[ \prod_{s \in ne(x_i)} F_s(x_i, X_s) \Big] \\ &= \prod_{s \in ne(x_i)} \Big[ \sum_{X_s} F_s(x_i, X_s)\Big] =: \prod_{s \in ne(x_i)} \mu_{f_s \rightarrow x_i}
+p(x_i) &= \sum_{X \setminus x_i} \Big[ \prod_{s \in ne(x_i)} F_s(x_i, X_s) \Big] \\ &= \prod_{s \in ne(x_i)} \Big[ \sum_{X_s} F_s(x_i, X_s)\Big] =: \prod_{s \in ne(x_i)} \mu_{f_s \rightarrow x_i}(x_i)
 \end{split}
 \end{equation}
 
 The factors $F_s(x,X_s)$ represent subtrees in the factor graphs and can thus be factorized again: 
-\begin{equation}\label{eq:product_of_neighbours}
+\begin{equation}\label{eq:product2}
 F_s(x_i,X_s) = f_s(x_i, X_s) G_1(x_1, X_{s_1})\dots G_1(x_M, X_{s_M}).
 \end{equation}
 The factors $G_1(x_1, X_{s_1})\dots G_1(x_M, X_{s_M})$ represent here the subgraphs of all neighbours of $f_s$ except from $x_i$ and are illustrated by red circles in figure \ref{fig:message2}.
@@ -167,20 +192,20 @@ The factors $G_1(x_1, X_{s_1})\dots G_1(x_M, X_{s_M})$ represent here the subgra
 	\draw[edge] (fs) to (xl2);
 	\draw[edge, loosely dotted] (xl1) to (xl2);
 	\end{tikzpicture}
-	\caption{Exemplary factor graph to deduce the messages of the sum-product algorithm.}\label{fig:message2}
+	\caption{Exemplary factor graph to visualize the deduction of an expression for messages from factors to nodes equation \ref{eq:message2}. The red circles represent the factorization expressed in equation  \ref{eq:product2}.}\label{fig:message2}
 \end{figure}
 
-With that, the messages defined in equation \ref{eq:product_of_neighbours} can be further evaluated to
+With that, the messages defined in equation \ref{eq:message1} can be further evaluated to
 \begin{equation}\label{eq:message2}
 \begin{split}
 \mu_{f_s \rightarrow x_i}(x_i) &= \sum_{X_s \setminus x_i} f_s(x_i, X_s) \prod_{m \in ne(f_s) \setminus x_i} \Big[ \sum_{{X_s}_m} G_m(x_m, {X_s}_m)  \Big] \\ &= \sum_{\mathbf{x_s} \setminus x_i} f_s(x_i, X_s) \prod_{m \in ne(f_s) \setminus x_i} \mu_{x_m \rightarrow f_s}(x_m).
 \end{split}
 \end{equation}
-We have now defined  messages from factor to variable nodes. $\mu_{x_m \rightarrow f_s}(x_m) :=\sum_{{X_s}_m} G_m(x_m, {X_s}_m)$. Going one step further yields an expression for messages from variables to factors as well. Analogously to before, $G_m(x_m, {X_s}_m)$ can be factorised again to 
-\begin{equation}\label{eq:product_of_neighbours2}
+We have now defined  messages from factor to variable nodes. $\mu_{x_m \rightarrow f_s}(x_m) :=\sum_{{X_s}_m} G_m(x_m, {X_s}_m)$. Going one step further yields an expression for messages from variables to factors as well. Analogously to before, $G_m(x_m, {X_s}_m)$ can be factorized again to 
+\begin{equation}\label{eq:product3}
 G_m(x_m,{X_s}_m) = \prod_{l \in ne(x_m) \setminus f_s} F_l(x_m, {{X_s}_m}_l),
 \end{equation}
-as visualised in figure \ref{fig:message3}.
+as visualized in figure \ref{fig:message3}. The factors $F_l$ are visualized by blue circles.
 
 \begin{figure}[h]
 	\centering
@@ -211,28 +236,28 @@ as visualised in figure \ref{fig:message3}.
 	\draw[edge] (fs) to (xl2);
 	\draw[edge, loosely dotted] (xl1) to (xl2);
 	\end{tikzpicture}
-	\caption{Exemplary factor graph to deduce the messages of the sum-product algorithm.}\label{fig:message3}
+	\caption{Exemplary factor graph to visualize the deduction of an expression for messages from nodes to factors equation \ref{eq:message3}. The blue circles represent the factorization expressed in equation  \ref{eq:product3}.}\label{fig:message3}
 \end{figure}
 
-Inserting this factorisation into the definition of $\mu_{x_m \rightarrow f_s}(x_m)$ and exchanging summation and multiplication reveals an explicite formulat for this messages:
-\begin{equation}\label{eq:product_of_neighbours3}
+Inserting this factorization into the definition of $\mu_{x_m \rightarrow f_s}(x_m)$ and exchanging summation and multiplication reveals an explicit formula for this messages:
+\begin{equation}\label{eq:message3}
     \begin{split}
         \mu_{x_m \rightarrow f_s}(x_m) &=\sum_{{X_s}_m} \Big[ \prod_{l \in ne(x_m) \setminus f_s} F_l(x_m, {{X_s}_m}_l) \Big] \\ &= \prod_{l \in ne(x_m) \setminus f_s} \Big[\sum_{{{X_s}_m}_l} F_l(x_m, {{X_s}_m}_l) \Big] \\ &= \prod_{l \in ne(x_m) \setminus f_s} \mu_{f_l \rightarrow x_m}(x_m)
     \end{split}
 \end{equation}
 
-We have now induced how a marginal distribution $p(x_i)$ can be expressed by local messages passed between factors and variables through the factor graph. For leave nodes those messages can be stated explicitely.
-For a variable node as leave of the factor graph equation \ref{eq:product_of_neighbours3} shows that the message, the node sends to its only neighbor, is given by
+We have now induced how a marginal distribution $p(x_i)$ can be expressed by local messages passed between factors and variables through the factor graph. For leave nodes those messages can be stated explicitly.
+In case a variable node is leave of the factor graph, equation \ref{eq:message3} shows that the message, the node sends to its only neighbor, is given by
 \begin{equation}\label{eq:marg_init_1}
 \mu_{x \rightarrow f}(x) = 1.
 \end{equation}
-Similarly, from equation \ref{eq:product_of_neighbours2} then concludes the initial value
+Similarly, from equation \ref{eq:message2} then concludes the initial value
 \begin{equation}\label{eq:marg_init_2}
 \mu_{f \rightarrow x}(x) = f(x)
 \end{equation}
-for a message from a leave factor node to its neighbouring variable node.
+for a message from a leave factor node to its neighboring variable node.
 
-Having explicit start values for messages from the leaves, messages can propagated through the factor graphs to an arbitrarily chosen root node. This root node has then received messages from all its neighbours and can thus calculate its marginal distribution according to \ref{eq:message1}. Analogously, passing all messages back from the root to all leave nodes enables to calculate the marginals of all variables in the factor graph. For this calculation two time the number of edges in the factor graph many messages have to be computed, which is linear in the number of variables of the model.
+Having explicit start values for messages from the leaves, messages can propagated through the factor graphs to an arbitrarily chosen root node. This root node has then received messages from all its neighbors and can thus calculate its marginal distribution according to \ref{eq:message1}. Analogously, passing all messages back from the root to all leave nodes enables to calculate the marginals of all variables in the factor graph. For this calculation two time the number of edges in the factor graph many messages have to be computed, which is linear in the number of variables of the model.\\
 \textcolor{red}{todo: marginal of a factor formula, connection to EM-algorithm, continuous RVs}
 
 
@@ -276,16 +301,13 @@ By propagation messages from all leave nodes to an arbitrarily chosen root node,
 The missing step is to find the variable configuration for the maximal joint probability. The central maximization is performed in equation \ref{eq:map_m1} over the variables of each factor before its message is passed further to the root. By saving the maximal configuration of each factor at this step, the values of the variables which give rise to the maximal joint probability can be obtained. In contrast to the sum-product algorithm, the max-sum algorithm does not require to propagate messages back from the root to all leaves.
 
 \subsection{Inference in general graphs}
-The inference methods discussed only produce valid results for trees. However, since the algorithms only consist of local messages passed through the graph, it can also be applied to graphs which contain circles. This is called "loopy belief propagation". To do so, all messages need to be initialized by the unit function and a message passing schedule must state the order in which the messages are passed through the graph.
+The discussed inference methods only produce valid results for trees. However, since the algorithms only consist of local messages passed through the graph, they can also be applied to graphs which contain circles. This is called "loopy belief propagation. For that, all messages need to be initialized by the unit function and a message passing schedule must be defined to state the order in which the messages are passed through the graph.
 
 With circles in the graph, loopy belief propagation is not guaranteed to converge. In some situations it produces only poor results, while in other situations the final outcome turned out to be quite accurate. Certain error-correcting codes for example are equivalent to loopy belief propagation.
 
-There are also algorithms, which generalize the message passing idea to work for arbitrary graphs. The junction tree algorithm for example 
+There are also algorithms, which generalize the message passing idea to work for arbitrary graphs. The junction tree algorithm resolves circles in a general graph by a triangulation step and extraction of a maximal spanning tree. Depending on the underlying graph the algorithm requires exponential effort, but is efficient from the perspective that there are generally no cheaper approaches for exact inference in arbitrary graphs.
 
-E.g. certain error-correcting cores
-loopy belief propagation
-
-\section{Approximate inference}
+\section{Approximate inference}\label{chapter:approximate_inference}
 This chapter presents by the expectation propagation (EP) algorithm a method for approximate inference. In the following section the algorithm and its methodology are explained at first. Secondly it is applied to graphical models which came already up in the previous chapters. At last a general discussion and outlook of EP is given.
 
 Known as expectation propagation, similar to variational inference
