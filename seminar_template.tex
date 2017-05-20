@@ -262,7 +262,7 @@ Having explicit start values for messages from the leaves, messages can propagat
 
 
 \subsection{Maximum a posteriori estimation}
-Next to computing marginal distributions, a frequent task is to find maximum a maximum a posteriori estimate. The aim is to finding values for all random variables, which maximize the joint probability distribution and can be formulated mathematically as
+Next to computing marginal distributions, a frequent task is to find maximum a posteriori estimates. The aim is to finding values for all random variables, which maximize the joint probability distribution and can be formulated mathematically as
 \begin{equation}\label{eq:map_problem}
 X^* = \underset{X}{\arg\max}~ p(X) = \underset{X}{\arg\max}~ \ln (p(X)).
 \end{equation}
@@ -296,12 +296,12 @@ Also the message initializations for leave nodes from equation \ref{eq:marg_init
 \begin{equation}\label{eq:marg_init_2}
 \mu_{f \rightarrow x}(x) = \ln(f(x)).
 \end{equation}
-By propagation messages from all leave nodes to an arbitrarily chosen root node, the maximal value of the joint probability distribution can be calculated in that root node. The message passing is again done in a fashion, that a node can forward its message to its parent node as soon it has received messages from all children.
+By propagating messages from all leave nodes to an arbitrarily chosen root node, the maximal value of the joint probability distribution can be calculated in that root node. The message passing is again done in a fashion, that a node can forward its message to its parent node as soon it has received messages from all children.
 
 The missing step is to find the variable configuration for the maximal joint probability. The central maximization is performed in equation \ref{eq:map_m1} over the variables of each factor before its message is passed further to the root. By saving the maximal configuration of each factor at this step, the values of the variables which give rise to the maximal joint probability can be obtained. In contrast to the sum-product algorithm, the max-sum algorithm does not require to propagate messages back from the root to all leaves.
 
 \subsection{Inference in general graphs}
-The discussed inference methods only produce valid results for trees. However, since the algorithms only consist of local messages passed through the graph, they can also be applied to graphs which contain circles. This is called "loopy belief propagation. For that, all messages need to be initialized by the unit function and a message passing schedule must be defined to state the order in which the messages are passed through the graph.
+The discussed inference methods only produce valid results for trees. However, since the algorithms only consist of local messages passed through the graph, they can also be applied to graphs which contain circles. This is called "loopy belief propagation". For that, all messages need to be initialized by the unit function and a message passing schedule must be defined to state the order in which the messages are passed through the graph.
 
 With circles in the graph, loopy belief propagation is not guaranteed to converge. In some situations it produces only poor results, while in other situations the final outcome turned out to be quite accurate. Certain error-correcting codes for example are equivalent to loopy belief propagation.
 
@@ -310,29 +310,27 @@ There are also algorithms, which generalize the message passing idea to work for
 \section{Approximate inference}\label{chapter:approximate_inference}
 This chapter presents by the expectation propagation (EP) algorithm a method for approximate inference. In the following section the algorithm and its methodology are explained at first. Secondly it is applied to graphical models which came already up in the previous chapters. At last a general discussion and outlook of EP is given.
 
-Known as expectation propagation, similar to variational inference
-Minimize KL-divergence using moment matching.
-Interesting properties different from standard VI
 \subsection{Methodology}
-Similar to variational inference (VI) in EP the true distribution $p(\mathbf{z})$ of a model is approximated by a simpler distribution $q(\mathbf{z})$. The approximation is computed and measured by minimizing the Kullback-Leibler divergence of the two functions. However, while in VI $KL(q||p)$ is considered, EP swaps the distributions and aims a minimizing $KL(p||q)$.
+Similar to variational inference (VI) in EP the true distribution $p(\mathbf{z})$ of a model is approximated by a simpler distribution $q(\mathbf{z})$. The approximation is computed and measured by minimizing the Kullback-Leibler divergence of the two functions. However, while in VI $KL(q||p)$ is considered, EP swaps the distributions and aims at minimizing $KL(p||q)$.
 
 For $q(\mathbf{z})$ a member of the exponential family with the form
 \begin{equation}\label{eq:ep1}
-q(\mathbf{z}) = h(\mathbf{z})g(\mathbf{\eta}) \exp(\mathbf{\eta}^T(u(\mathbf{z}))).
+q(\mathbf{z}) = h(\mathbf{z})g(\mathbf{\eta}) \exp(\mathbf{\eta}^T(u(\mathbf{z})))
 \end{equation}
-With that the KL divergence becomes
+must be chosen. With that the KL divergence becomes
 \begin{equation}\label{eq:ep2}
 KL(p||q)= - \ln g(\eta) - \eta^T \mathbf{E}_{p(\mathbf{z})} [u(\mathbf{z})] + const.
 \end{equation}
 The distribution $q(\mathbf{z})$ which minimizes this KL divergence from equation \ref{eq:ep2} can be constructed by moment matching. If $q(\mathbf{z})$ is a Gaussian for example, its mean corresponds to the mean of $p(\mathbf{z})$ and its covariance is equal to the covariance of $p(\mathbf{z})$.
 
-For the concrete EP algorithm we consider a model of hidden variables and parameters $\theta$ and observed data $\mathbf{D}$. Similarly to the previous chapter we assume that the joint distribution can be written as a product of factors $f_i$:
+\subsection{Expectation propagation algorithm}
+For the concrete EP algorithm we consider a model of hidden variables and parameters $\theta$ and observed data $\mathbf{D}$. Similarly to the previous chapter we assume that the joint distribution can be written as a product of factors $f_i$. However, one factor is not restricted to depend on only a subset of variables here, but has all latent variables and parameters (together represented by $\theta$) as its arguments.
 \begin{equation}\label{eq:ep3}
-p(\mathbf{D}, \theta) = \prod_i f_i(\theta).
+p(\theta, \mathbf{D}) = \prod_i f_i(\theta).
 \end{equation}
 The goal is then to approximate the posterior distribution $p(\theta|\mathbf{D})$, which can be expressed by the joint distribution and the evidence $p(\mathbf{D})$:
 \begin{equation}\label{eq:ep4}
-p(\theta|\mathbf{D}) = \frac{1}{p(\mathbf{D})} \prod_i f_i(\theta),
+p(\theta|\mathbf{D}) = \frac{1}{p(\mathbf{D})} \prod_i f_i(\theta , \mathbf{D}),
 \end{equation}
 with 
 \begin{equation}\label{eq:ep5}
@@ -340,40 +338,43 @@ p(\mathbf{D}) = \int \prod_i f_i(\theta) d\theta.
 \end{equation}
 \textcolor{red}{evtl. Footnote to refernce}.  
 
-Adapting to the structure of the true posterior distribution, $q(\theta)$ is chosen as a product of factors $\tilde{f}_i$ from a exponential family, which each correspond to one of the true factors $f_i$: $frac{1}{Z}$ represents the normalizing factor for the distribution:
+Adapting to the structure of the true posterior distribution, $q(\theta)$ is chosen as a product of factors $\tilde{f}_i$ from a exponential family, which each correspond to one of the true factors $f_i$. By this way, $q(\theta)$ is also from this exponential family. $\frac{1}{Z}$ represents the normalizing factor for the distribution:
 \begin{equation}\label{eq:ep6}
 q(\theta) = \frac{1}{Z}\prod_i \tilde{f}_i(\theta)
 \end{equation}
 
-The factors $\tilde{f}_i$ are refined iteratively. Starting with a rough initialization of all approximating factors $\tilde{f}_i$, in each iteration on factor is refined closer to its true factor $f_i$, while the rest of the factors are fixed. Assuming we want to refine factor $j$, we first define the product of the fixed factors $q^{-j}$ for that:
+The factors $\tilde{f}_i$ are refined iteratively. Starting with a rough initialization of all approximating factors $\tilde{f}_i$, in each iteration on factor is refined closer to its true factor $f_i$, while the rest of the factors are fixed. Assuming we want to refine factor $j$, we first define the product of the fixed factors $q^{\backslash j}(\theta)$ for that:
 \begin{equation}\label{eq:ep7}
 q^{\backslash j}(\theta) = \prod_{i\ne j} \tilde{f}_i(\theta)
 \end{equation}
-Then we evaluate a new approximation of the posterior by matching the moments of $f_j q^{\backslash j}(\theta)$:
+Then we evaluate a new approximation of the posterior $q^{new}(\theta)$ by matching the moments of $f_j \cdot q^{\backslash j}(\theta)$:
 \begin{equation}\label{eq:ep7}
 q^{new}(\theta) \propto f_j ~ q^{\backslash j}(\theta)
 \end{equation}
-Finally, we can extract and store a new approximation of $\tilde{f}_j$ from that: $\frac{1}{Z_j}$ again represents a necessary normalizing factor here:
+Finally, we can extract and store a new approximation of $\tilde{f}_j$ from that. $\frac{1}{Z_j}$ again represents a necessary normalizing factor here:
 \begin{equation}\label{eq:ep8}
 \tilde{f}_j = \frac{1}{Z_j} \frac{q^{new}(\theta)}{q^{\backslash j}(\theta)}
 \end{equation}
+\\ \textcolor{red}{add complete algorithm here}
 \subsection{Expectation propagation in graphical models}
-Whereas general expectation propagation allows the factors of the joint distribution to depend on all parameters and latent variables of the model (see equation \ref{eq:ep4}), in graphical models the factors of the joint distribution depend on a subset of variables $\theta_i$.
+Whereas general expectation propagation allows the factors of the joint distribution to depend on all parameters and latent variables of the model (see equation \ref{eq:ep4}), in graphical models the factors of the joint distribution depend on a subset of variables $\theta_i$:
 \begin{equation}\label{eq:ep9}
 p(\theta|\mathbf{D}) = \frac{1}{p(\mathbf{D})} \prod_i f_i(\theta_i),
 \end{equation}
 An interesting property gets visible if we use a fully factorized approximation function: Then, the EP algorithm becomes equal the sum-product algorithm. In other words, the sum-product algorithm turns out to be a special case of expectation propagation, if using fully independent variables in the approximation function.
 
-With respect to approximation function of the EP algorithm an interpretation can be formulated: Since the sum-product algorithm is an exact inference algorithm, a more flexible approximation function (as for example one with a few dependency connections in the graph left out) can increase the accuracy.
+With respect to the approximation function of the EP algorithm an interpretation can be formulated: Since the sum-product algorithm is an exact inference algorithm, a more flexible approximation function compared to the underlying model (as for example one with a few dependency connections in the graph left out) can increase the accuracy.
 
 Another approach to incorporate some extent of generalization to expectation propagation is to refine a set of factors together within one iteration of the algorithm. However, for both methods there are still open research question how to find the best amount of independence for the approximation function of EP as well as the optimal grouping of factors for simultaneous refinement.
 
 \subsection{Discussion}
-A key disadvantage of expectation propagation is that is not guaranteed to converge. For the exponential family the resulting divergence function is proven to have stationary point, but the iteration of EP might not reach it.
+A key disadvantage of expectation propagation is that is not guaranteed to converge. For the exponential family the resulting KL-divergence function is proven to have stationary point, but the iteration of EP might not reach it.
 
-Variational inference in contrast provides a lower bound in each optimization step and thus guarantees to converge. However, EP can nevertheless be a powerful inference method. Because variational inference operates with a lower bound it often underestimates the variance of the true distribution. Therefore, if expectation propagation converges, it often outperforms other variational methods. On the other hand, if the algorithm does not converge, it might be for a good reason an the chosen exponential family approximates the true posterior only poorly.
+Variational inference in contrast provides a lower bound in each optimization step and thus guarantees to converge. However, EP can nevertheless be a powerful inference method. Because variational inference operates with a lower bound it often underestimates the variance of the true distribution. Therefore, if expectation propagation converges, it often outperforms other variational methods.
 
-Another aspect leading to conceptually different behavior between expectation propagation and variational inference comes from the approach, the KL divergence is minimized. Expectation propagation minimizes $KL(p||q)$, while variational inference aims at reducing $KL(q||p)$. For multimodal distribution this leads to significantly wore results for expectation propagation. Since the EP algorithm tries to incorporate all modes of the underlying probability distribution it can approximate function with more than one modes only badly. This is visualized in figure \ref{fig:multimodal}, which is taken from \cite{bishop2006prml}.
+On the other hand, if the algorithm does not converge, it might be for a good reason an the chosen exponential family approximates the true posterior only poorly.
+
+Another aspect leading to conceptually different behavior between expectation propagation and variational inference comes from the approach how the KL divergence is minimized. Expectation propagation minimizes $KL(p||q)$, while variational inference aims at reducing $KL(q||p)$. For multimodal distribution this leads to significantly worse results for expectation propagation. Since the EP algorithm tries to incorporate all modes of the underlying probability distribution it can approximate function with more than one modes only badly. This is visualized in figure \ref{fig:multimodal}, which is taken from \cite{bishop2006prml}.
 
 \begin{figure}[h]
 	\begin{center}
@@ -383,34 +384,11 @@ Another aspect leading to conceptually different behavior between expectation pr
 \end{figure}
 \section{Summary and outlook}
 
-
-% Subsections
-\subsection{Subsection}
-blabla with 2 sources \cite{murphy2012machine, bishop2006prml}.
-
-% Example figure
-\begin{figure}[h]
-	\begin{center}
-		\includegraphics[scale=0.2]{figure1.png}
-		\caption{Tree}\label{fig:tree}
-	\end{center}
-\end{figure}
-
-% Example table
-\begin{table}[h]
-	\begin{center}
-		\caption{Example table}\label{tab:example}
-		\begin{tabular}{c|c}
-			Column 1 & Column 2\\
-			\hline
-			0 & 1\\
-		\end{tabular}
-	\end{center}
-\end{table}
-
 % Bibliography
 \bibliographystyle{abbrv}
 % Add references using the command below
 \bibliography{references}
+\nocite{*}
+%\cite{Seeger05expectationpropagation}
 
 \end{document}
