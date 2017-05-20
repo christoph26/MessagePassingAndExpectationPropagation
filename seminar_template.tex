@@ -27,7 +27,7 @@
 \end{abstract}
 
 \section{Introduction}
-Probabilistic graphical models like Markov Random Fields or Bayesian Networks provide clear and illustrative ways to describe probabilistic processes. In such models, nodes represent random variables and edges their conditional dependencies. The joint distribution of all involved variables can be expressed as a product of factors, which are observed or given specific values during modelling. As an example, a Bayesian network with three variables is given in figure \ref{fig:BN}. It defines the values of $x_1$ and $x_3$ to be conditionally independent given $x_2$.
+Probabilistic graphical models like Markov Random Fields or Bayesian Networks provide clear and illustrative ways to describe probabilistic processes. In such models, nodes represent random variables and edges their conditional dependencies. The joint distribution of all involved variables can be expressed as a product of factors, which are observed or given specific values during modeling. As an example, a Bayesian network with three variables is given in figure \ref{fig:BN}. It defines the values of $x_1$ and $x_3$ to be conditionally independent given $x_2$.
 \begin{figure}[h]
 	\centering
 	\begin{tikzpicture}
@@ -45,14 +45,14 @@ Probabilistic graphical models like Markov Random Fields or Bayesian Networks pr
 	\caption{Bayesian network with three variables. $x_1$ and $x_3$ are conditionally independent given $x_2$.}\label{fig:BN}
 \end{figure}
 
-Typical tasks in such a scenario are to do Bayesian inference to extract marginal distributions of specific variables or find maximum apriori estimates. However, with an increasing number of variables these task can become computationally very expensive. 
+Typical tasks in such a scenario are to do Bayesian inference to extract marginal distributions of specific variables or find maximum aposteriori estimates. However, with an increasing number of variables these task can become computationally very expensive. 
 
-The naive approach for marginalisation is to sum out all but one variable from the joint distribution $p(X)$. This is formally shown in equation \ref{eq:marginalisation_naive}, where $X \setminus x_i$ describes the set of all random variables except $x_i$.
+The naive approach for marginalization is to sum out all but one variable from the joint distribution $p(X)$. This is formally shown in equation \ref{eq:marginalisation_naive}, where $X \setminus x_i$ describes the set of all random variables except $x_i$.
 This strategy requires exponentially many evaluations of the joint distribution in the number of variables and is thus not applicable to bigger networks.
 \begin{equation}\label{eq:marginalisation_naive}
 p(x_i)= \sum_{X \setminus x_i} p(X)
 \end{equation}
-Therefore, this paper explains more efficient algorithms to do large scale Bayesian inference in graphical models. The next chapter \ref{chapter:exact_inference} deals with exact inference and presents two message passing algorithms to calculate marginals and maximum apriori estimates for graphical models. Subsequently, in chapter \ref{chapter:approximate_inference} expectation propagation as a method of approximate inference is explained.
+Therefore, this paper explains more efficient algorithms to do large scale Bayesian inference in graphical models. The next chapter \ref{chapter:exact_inference} deals with exact inference and presents two message passing algorithms to calculate marginals and maximum aposteriori estimates for graphical models. Subsequently, in chapter \ref{chapter:approximate_inference} expectation propagation as a method of approximate inference is explained.
 
 \section{Exact inference}\label{chapter:exact_inference}
 The intuition of the algorithms presented in this section is to exploit independence properties of the random variables. Graphical models define the joint probability to be expressed as a product of factors, considering the conditional independences expressed by the graph. For Bayesian networks those factors correspond to conditional distributions, in Markov Random Fields to clique potentials. Assuming appropriately normalized factors, the joint distribution can be written as a product according to equation \ref{eq:product_of_factors}. The index $s$ iterates here over all factors of the graph; $X_s$ defines the subset of variables, the factor $s$ depends on.
@@ -301,11 +301,13 @@ By propagating messages from all leave nodes to an arbitrarily chosen root node,
 The missing step is to find the variable configuration for the maximal joint probability. The central maximization is performed in equation \ref{eq:map_m1} over the variables of each factor before its message is passed further to the root. By saving the maximal configuration of each factor at this step, the values of the variables which give rise to the maximal joint probability can be obtained. In contrast to the sum-product algorithm, the max-sum algorithm does not require to propagate messages back from the root to all leaves.
 
 \subsection{Inference in general graphs}
-The discussed inference methods only produce valid results for trees. However, since the algorithms only consist of local messages passed through the graph, they can also be applied to graphs which contain circles. This is called "loopy belief propagation". For that, all messages need to be initialized by the unit function and a message passing schedule must be defined to state the order in which the messages are passed through the graph.
+The discussed inference methods only produce valid results for trees. However, since the algorithms only consist of local messages passed through the graph, they can also be applied to graphs which contain circles. This is called "loopy belief propagation. For that, all messages need to be initialized by the unit function and a message passing schedule must be defined to state the order in which the messages are passed through the graph.
 
 With circles in the graph, loopy belief propagation is not guaranteed to converge. In some situations it produces only poor results, while in other situations the final outcome turned out to be quite accurate. Certain error-correcting codes for example are equivalent to loopy belief propagation.
 
 There are also algorithms, which generalize the message passing idea to work for arbitrary graphs. The junction tree algorithm resolves circles in a general graph by a triangulation step and extraction of a maximal spanning tree. Depending on the underlying graph the algorithm requires exponential effort, but is efficient from the perspective that there are generally no cheaper approaches for exact inference in arbitrary graphs.
+
+Linearized belief propagation is another approach to overcome loops in the graph. By restricting the values to be close to certain default values, the problem can be formulated in a matrix framework, for which there is a closed-form solution. More information can be found in \cite{Gatterbauer:2015:LSB:2735479.2735490}. 
 
 \section{Approximate inference}\label{chapter:approximate_inference}
 This chapter presents by the expectation propagation (EP) algorithm a method for approximate inference. In the following section the algorithm and its methodology are explained at first. Secondly it is applied to graphical models which came already up in the previous chapters. At last a general discussion and outlook of EP is given.
@@ -383,7 +385,7 @@ Another aspect leading to conceptually different behavior between expectation pr
 	\end{center}
 \end{figure}
 \section{Summary and outlook}
-
+In summary, message passing as well as expectation propagation are valid and powerful inference methods for different situations. If the underlying graphical model is a tree, the max-sum and sum-product algorithm provide efficient and exact results. For general graphs, no method is permanently superior. Depending on the concrete problem setting, expectation propagation or generalized versions of belief propagation for arbitrary graphs can return more accurate results. 
 % Bibliography
 \bibliographystyle{abbrv}
 % Add references using the command below
