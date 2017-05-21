@@ -305,7 +305,7 @@ The missing step is to find the variable configuration for the maximal joint pro
 \subsection{Discussion}
 The two algorithms require a fixed number of passes through the graph. Thus their computational complexity depends on the number of edges, which increases linearly with the number of involved random variables. Next to this factor, the computational cost of the two algorithms also consists a polynomial factor in the number of values, the discrete random variables can take.
 
-The big disadvantage of the sum-product and max-sum algoriths is that they only work on trees-shaped graphical models. To overcome this, the next section presents approaches to overcome this and do inference via message passing in general graphs.
+The big disadvantage of the sum-product and max-sum algorithms is that they only work on trees-shaped graphical models. To overcome this, the next section presents approaches to overcome this and do inference via message passing in general graphs.
 
 \subsection{Inference via message passing in general graphs}
 The discussed inference methods only produce valid results for trees. However, since the algorithms only consist of local messages passed through the graph, they can also be applied to graphs which contain circles. This is called "loopy belief propagation". For that, all messages need to be initialized by the unit function and a message passing schedule must be defined to state the order in which the messages are passed through the graph.
@@ -317,10 +317,10 @@ There are also algorithms, which generalize the message passing idea to work for
 Linearized belief propagation is another approach to overcome loops in the graph. By restricting the values to be close to certain default values, the problem can be formulated in a matrix framework, for which there is a closed-form solution. More information can be found in \cite{Gatterbauer:2015:LSB:2735479.2735490}. 
 
 \section{Expectation propagation}\label{chapter:approximate_inference}
-This chapter presents by the expectation propagation (EP) algorithm a method for approximate inference. In the following section the algorithm and its methodology are explained at first. Secondly it is applied to graphical models which came already up in the previous chapters. At last a general discussion and outlook of EP is given.
+This chapter presents by expectation propagation (EP) a method for approximate inference. In the following section the methodology behind and the concrete algorithm are explained at first. Secondly, some interesting properties when applying expectation propagation to graphical models are highlighted. At last, a general discussion and comparison to variational inference is given.
 
 \subsection{Methodology}
-Similar to variational inference (VI) in EP the true distribution $p(\mathbf{z})$ of a model is approximated by a simpler distribution $q(\mathbf{z})$. The approximation is computed and measured by minimizing the Kullback-Leibler divergence of the two functions. However, while in VI $KL(q||p)$ is considered, EP swaps the distributions and aims at minimizing $KL(p||q)$.
+Similarly to variational inference (VI), in EP the true distribution $p(\mathbf{z})$ of a model is approximated by a simpler distribution $q(\mathbf{z})$. The approximation is computed and measured by minimizing the Kullback-Leibler divergence of the two functions. However, while in VI $KL(q||p)$ is considered, EP swaps the distributions and aims at minimizing $KL(p||q)$.
 
 For $q(\mathbf{z})$ a member of the exponential family with the form
 \begin{equation}\label{eq:ep1}
@@ -330,7 +330,7 @@ must be chosen. With that the KL divergence becomes
 \begin{equation}\label{eq:ep2}
 KL(p||q)= - \ln g(\eta) - \eta^T \mathbf{E}_{p(\mathbf{z})} [u(\mathbf{z})] + const.
 \end{equation}
-The distribution $q(\mathbf{z})$ which minimizes this KL divergence from equation \ref{eq:ep2} can be constructed by moment matching. If $q(\mathbf{z})$ is a Gaussian for example, its mean corresponds to the mean of $p(\mathbf{z})$ and its covariance is equal to the covariance of $p(\mathbf{z})$.
+The distribution $q(\mathbf{z})$, which minimizes this KL divergence from equation \ref{eq:ep2}, can be constructed by moment matching. If $q(\mathbf{z})$ is a Gaussian for example, its mean corresponds to the mean of $p(\mathbf{z})$ and its covariance is equal to the covariance of $p(\mathbf{z})$.
 
 \subsection{Expectation propagation algorithm}
 For the concrete EP algorithm we consider a model of hidden variables and parameters $\theta$ and observed data $\mathbf{D}$. Similarly to the previous chapter we assume that the joint distribution can be written as a product of factors $f_i$. However, one factor is not restricted to depend on only a subset of variables here, but has all latent variables and parameters (together represented by $\theta$) as its arguments.
@@ -344,8 +344,7 @@ p(\theta|\mathbf{D}) = \frac{1}{p(\mathbf{D})} \prod_i f_i(\theta , \mathbf{D}),
 with 
 \begin{equation}\label{eq:ep5}
 p(\mathbf{D}) = \int \prod_i f_i(\theta) d\theta.
-\end{equation}
-\textcolor{red}{evtl. Footnote to refernce}.  
+\end{equation}  
 
 Adapting to the structure of the true posterior distribution, $q(\theta)$ is chosen as a product of factors $\tilde{f}_i$ from a exponential family, which each correspond to one of the true factors $f_i$. By this way, $q(\theta)$ is also from this exponential family. $\frac{1}{Z}$ represents the normalizing factor for the distribution:
 \begin{equation}\label{eq:ep6}
@@ -364,7 +363,7 @@ Finally, we can extract and store a new approximation of $\tilde{f}_j$ from that
 \begin{equation}\label{eq:ep8}
 \tilde{f}_j = \frac{1}{Z_j} \frac{q^{new}(\theta)}{q^{\backslash j}(\theta)}
 \end{equation}
-\\ \textcolor{red}{add complete algorithm here}
+
 \subsection{Expectation propagation in graphical models}
 Whereas general expectation propagation allows the factors of the joint distribution to depend on all parameters and latent variables of the model (see equation \ref{eq:ep4}), in graphical models the factors of the joint distribution depend on a subset of variables $\theta_i$:
 \begin{equation}\label{eq:ep9}
@@ -377,13 +376,13 @@ With respect to the approximation function of the EP algorithm an interpretation
 Another approach to incorporate some extent of generalization to expectation propagation is to refine a set of factors together within one iteration of the algorithm. However, for both methods there are still open research question how to find the best amount of independence for the approximation function of EP as well as the optimal grouping of factors for simultaneous refinement.
 
 \subsection{Discussion}
-A key disadvantage of expectation propagation is that is not guaranteed to converge. For the exponential family the resulting KL-divergence function is proven to have stationary point, but the iteration of EP might not reach it.
+A key disadvantage of expectation propagation is that is not guaranteed to converge. For the exponential family the resulting KL-divergence function is proven to have a stationary point, but the iteration of EP might not reach it.
 
 Variational inference in contrast provides a lower bound in each optimization step and thus guarantees to converge. However, EP can nevertheless be a powerful inference method. Because variational inference operates with a lower bound it often underestimates the variance of the true distribution. Therefore, if expectation propagation converges, it often outperforms other variational methods.
 
 On the other hand, if the algorithm does not converge, it might be for a good reason an the chosen exponential family approximates the true posterior only poorly.
 
-Another aspect leading to conceptually different behavior between expectation propagation and variational inference comes from the approach how the KL divergence is minimized. Expectation propagation minimizes $KL(p||q)$, while variational inference aims at reducing $KL(q||p)$. For multimodal distribution this leads to significantly worse results for expectation propagation. Since the EP algorithm tries to incorporate all modes of the underlying probability distribution it can approximate function with more than one modes only badly. This is visualized in figure \ref{fig:multimodal}, which is taken from \cite{bishop2006prml}.
+Another aspect leading to conceptually different behavior between expectation propagation and variational inference comes from the approach how the KL divergence is minimized. Expectation propagation minimizes $KL(p||q)$, while variational inference aims at reducing $KL(q||p)$. For multimodal distribution this leads to significantly worse results for expectation propagation. Since the EP algorithm tries to incorporate all modes of the underlying probability distribution it can approximate function with more than one mode only badly. This is visualized in figure \ref{fig:multimodal}, which is taken from \cite{bishop2006prml}.
 
 \begin{figure}[h]
 	\begin{center}
@@ -392,12 +391,14 @@ Another aspect leading to conceptually different behavior between expectation pr
 	\end{center}
 \end{figure}
 \section{Summary and outlook}
-In summary, message passing as well as expectation propagation are useful inference methods. If the underlying graphical model is a tree, the max-sum and sum-product algorithm compute exact results in an efficient way. For general models, there exist different approaches for approximate inference. Methods like loopy belief propagation or linearized belief propagation generalize the concept of message passing to arbitrary graphs. Expectation propagation follows an approach similar to variational inference and tries to find an approximation of the true distribution by minimizing the KL divergence.
+In summary, message passing as well as expectation propagation are useful inference methods. If the underlying graphical model is a tree, the max-sum and sum-product algorithm compute exact results in an efficient way.
+
+For general models, there exist different approaches for approximate inference. Methods like loopy belief propagation or linearized belief propagation generalize the concept of message passing to arbitrary graphs. Expectation propagation follows an approach similar to variational inference and tries to find an approximation of the true distribution by minimizing the KL divergence.
 However, none of these methods is in general superior. Depending on the concrete problem setting, either of the presented method can produce more accurate results.
 
-There is also ongoing research about the discussed approaches, especially for message passing. \cite{Gatterbauer:2015:LSB:2735479.2735490} does not only present a linear version of belief propagation but also shows an incremental version of belief propagation. Furthermore it describes a single-pass variation, in which only one message for each node is calculated.
+There is also ongoing research about the discussed approaches, especially for message passing. \cite{Gatterbauer:2015:LSB:2735479.2735490} does not only present a linearized belief propagation but also shows an incremental version. Furthermore it describes a single-pass variation, in which only one message for each node is calculated.
 
-Finally, as second outlook \cite{bibid} is presented. It considers Bayesian inference methods like expectation propagation on partitioned data. By this way, such inference methods could be applied to big data.
+Finally, as second outlook \cite{wayoflife} is presented. It considers Bayesian inference methods like expectation propagation on partitioned data. By this way, such inference methods could be applied to big data.
 
 
 % Bibliography
