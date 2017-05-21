@@ -26,44 +26,23 @@ Data Mining and Analytics\\
 
 
 
-\begin{frame}{Motivation}
-	Graphical models: Markov random fields, Bayesian networks 
-	2 examples
-	inference algorithms: exact by message passing
-	approximate by expectation propagation
+\begin{frame}[t]{Motivation}
+	Graphical models: Bayesian networks and Markov random fields\\
+	\centering
+	\begin{columns}[c] % the "c" option specifies center vertical alignment
+		\column{.5\textwidth} 
+		\only<2->{\includegraphics[scale=0.25]{BN_example.png}}
+		\column{.5\textwidth} 
+		\only<3->{\includegraphics[scale=0.25]{MRF_example.jpg}} 
+	\end{columns}
+	
+	\raggedright
+	\tiny{\only<2->{Image sources:\\
+		http://www.bayesia.com/hs-fs/hubfs/Bayesian\_Networks/Fig\_2\_2\_Sprinkler.png?t=1495201256220\\\&width=450\&height=626\&name=Fig\_2\_2\_Sprinkler.png\\}
+	\only<3->{http://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL\_COPIES/AV0809/ORCHARD/mrf.jpg}}
 \end{frame}
 
-\begin{frame}{Message passing: Idea}
-	~\\
-	Bayesian network: $p(X) =  p(x_1) p(x_2|x_1) p(x_3|x_1)$\\
-	\begin{figure}
-	\begin{tikzpicture}
-	
-	\tikzset{vertex/.style = {shape=circle,draw,minimum size=1.3em}}
-	\tikzset{edge/.style = {->,> = latex'}}
-	
-	\node[vertex] (x1) at  (0,0) {$x_1$};
-	\node[vertex] (x2) at  (2,0) {$x_2$};
-	\node[vertex] (x3) at  (4,0) {$x_3$};
-	
-	\draw[edge] (x1) to (x2);
-	\draw[edge] (x2) to (x3);
-	\end{tikzpicture}
-	\end{figure}
-	
-	Marginalization naive:
-	\begin{equation*}
-	p(x_2)= \sum_{X \setminus x_2} p(X)
-	\end{equation*}
-	Marginalization advanced:
-	\begin{equation*}
-	\begin{split}
-	p(x_2) &= \sum_{x_1} \sum_{x_3} p(x_1) p(x_2|x_1) p(x_3|x_2) \\ &= \underbrace{\Big[ \sum_{x_1}  p(x_1) p(x_2|x_1)\Big]}_{\mu_{x_1 \rightarrow x_2}}\cdot \underbrace{\Big[ \sum_{x_3}  p(x_3|x_2)\Big]}_{\mu_{x_3 \rightarrow x_2}}
-	\end{split}
-	\end{equation*}
-\end{frame}
-
-\begin{frame}{Factor graph}
+\begin{frame}[t]{Factor graph}
 	Bayesian network: $p(X) =  p(x_1) p(x_2|x_1) p(x_3|x_1)$\\
 	\begin{figure}
 		\begin{tikzpicture}
@@ -79,11 +58,11 @@ Data Mining and Analytics\\
 		\draw[edge] (x2) to (x3);
 		\end{tikzpicture}
 	\end{figure}
-	
-	Corresponding factor graph:
-	\begin{figure}
-		\centering
-		\begin{tikzpicture}
+	\only<2->{
+		Corresponding factor graph:
+		\begin{figure}
+			\centering
+			\begin{tikzpicture}
 			\tikzset{vertex/.style = {shape=circle,draw,minimum size=1.5em}}
 			\tikzset{edge/.style = {-,> = latex'}}
 			
@@ -101,101 +80,173 @@ Data Mining and Analytics\\
 			\draw[edge] (x2) to (f2);
 			\draw[edge] (x2) to (f3);
 			\draw[edge] (x3) to (f3);
-		\end{tikzpicture}
+			\end{tikzpicture}
+		\end{figure}}
+	\end{frame}
+	
+\section{Message passing}
+
+\begin{frame}[t]{Message passing: Idea}
+	~\\
+	Bayesian network: $p(X) =  p(x_1) p(x_2|x_1) p(x_3|x_1)$\\
+	\begin{figure}
+	\begin{tikzpicture}
+	
+	\tikzset{vertex/.style = {shape=circle,draw,minimum size=1.3em}}
+	\tikzset{edge/.style = {->,> = latex'}}
+	
+	\node[vertex] (x1) at  (0,0) {$x_1$};
+	\node[vertex] (x2) at  (2,0) {$x_2$};
+	\node[vertex] (x3) at  (4,0) {$x_3$};
+	
+	\draw[edge] (x1) to (x2);
+	\draw[edge] (x2) to (x3);
+	\end{tikzpicture}
 	\end{figure}
+	
+	\only<2->{Marginalization naive:
+	\begin{equation*}
+	p(x_2)= \sum_{X \setminus x_2} p(X)
+	\end{equation*}}
+	\only<3->{Marginalization advanced:
+	\begin{equation*}
+	\begin{split}
+	p(x_2) &= \sum_{x_1} \sum_{x_3} p(x_1) p(x_2|x_1) p(x_3|x_2) \\ &= \underbrace{\Big[ \sum_{x_1}  p(x_1) p(x_2|x_1)\Big]}_{\mu_{x_1 \rightarrow x_2}}\cdot \underbrace{\Big[ \sum_{x_3}  p(x_3|x_2)\Big]}_{\mu_{x_3 \rightarrow x_2}}
+	\end{split}
+	\end{equation*}}
 \end{frame}
 
-\begin{frame}{Sum-product algorithm}
+\begin{frame}[t]{Sum-product algorithm 1}
 	General marginalization:
 	\begin{equation*}\label{eq:message1}
 	\begin{split}
 	p(x_i) &= \sum_{X \setminus x_i} \Big[ \prod_{s \in ne(x_i)} F_s(x_i, X_s) \Big] = \prod_{s \in ne(x_i)} \Big[ \underbrace{\sum_{X_s} F_s(x_i, X_s)}_{\mu_{f_s \rightarrow x_i}(x_i)}\Big]% =: \prod_{s \in ne(x_i)} \mu_{f_s \rightarrow x_i}(x_i)
 	\end{split}
 	\end{equation*}
+	\begin{figure}[h]
+		\centering
+		\begin{tikzpicture}
+		
+		\definecolor{darkgreen}{RGB}{59,136,59}
+		
+		\tikzstyle{edge} = [draw,-]
+		\fill[green!20]   (0:-1.2) circle (1.8);
+		\node[darkgreen] (text) at (-0.6,1) {$F_s(x_i,X_s)$};
+		
+		\fill[green!20]   (4.1,-1.1) circle (0.8);
+		\fill[green!20]   (4.1,1.1) circle (0.8);
+		
+		\tikzset{vertex/.style = {shape=circle,draw,minimum size=2em}}
+		\node[vertex] (xi) at  (2,0) {$x_i$};
+		\node[vertex] (xl1) at  (-2,-1) {};
+		\node[vertex] (xl2) at  (-2,1) {};
+		
+		\tikzset{vertex/.style = {shape = rectangle,fill = gray!40,minimum size=2em}}
+		\node[vertex] (fs) at  (0,0) {$f_s$};
+		\node[vertex] (xr1) at  (4,-1) {};
+		\node[vertex] (xr2) at  (4,1) {};
+		
+		\draw[edge] (fs) to (xi);
+		\draw[edge] (xi) to (xr1);
+		\draw[edge] (xi) to (xr2);
+		\draw[edge] (fs) to (xl1);
+		\draw[edge] (fs) to (xl2);
+		\draw[edge, loosely dotted] (xr1) to (xr2);
+		\draw[edge, loosely dotted] (xl1) to (xl2);
+		\end{tikzpicture}
+	\end{figure}
+\end{frame}
+
+\begin{frame}[t]{Sum-product algorithm 2}
 	Local messages through factor graph:
 	\begin{equation*}
 	\begin{split}
-		\mu_{f_s \rightarrow x_i}(x_i) &= \sum_{\mathbf{x_s} \setminus x_i} f_s(x_i, X_s) \prod_{m \in ne(f_s) \setminus x_i} \mu_{x_m \rightarrow f_s}(x_m)\\
-		\mu_{x_m \rightarrow f_s}(x_m) &= \prod_{l \in ne(x_m) \setminus f_s} \mu_{f_l \rightarrow x_m}(x_m)
+	\mu_{f_s \rightarrow x_i}(x_i) &= \sum_{\mathbf{x_s} \setminus x_i} f_s(x_i, X_s) \prod_{m \in ne(f_s) \setminus x_i} \mu_{x_m \rightarrow f_s}(x_m)\\
+	\mu_{x_m \rightarrow f_s}(x_m) &= \prod_{l \in ne(x_m) \setminus f_s} \mu_{f_l \rightarrow x_m}(x_m)
 	\end{split}
 	\end{equation*}
 	
-	Initialization at leaf nodes:
-	$\mu_{x \rightarrow f}(x) = 1$, $\mu_{f \rightarrow x}(x) = f(x)$
+	\only<2->{Initialization at leaf nodes:
+	$\mu_{x \rightarrow f}(x) = 1$, $\mu_{f \rightarrow x}(x) = f(x)$\\~\\}
+	\only<3->{Propagate messages through the graph!}
 \end{frame}
 
-\begin{frame}{Max-sum algorithm}
+\begin{frame}[t]{Max-sum algorithm}
 	Maximum aposteriori estimate:
 	\begin{equation*}\label{eq:map_problem}
 	X^* = \underset{X}{\arg\max}~ p(X) = \underset{X}{\arg\max}~ \ln (p(X))
 	\end{equation*}
-	Infer $p(X^*)$ by adapting sum-product algorithm:
+		\only<2->{Infer $p(X^*)$ by adapting sum-product algorithm:
 	\begin{equation*}
 	\begin{split}
 	\mu_{f_s \rightarrow x_i}(x_i) &= \max_{X_s \setminus x_i} \Big[f_s(x_i, X_s) \sum_{m \in ne(f_s) \setminus x_i} \mu_{x_m \rightarrow f_s}(x_m) \Big]\\
 	\mu_{x_m \rightarrow f_s}(x_m) &= \sum_{l \in ne(x_m) \setminus f_s} \mu_{f_l \rightarrow x_m}(x_m)
 	\end{split}
-	\end{equation*}
-	Initialization at leaf nodes:
-	$\mu_{x \rightarrow f}(x) = 0$, $\mu_{f \rightarrow x}(x) = \ln f(x)$
+	\end{equation*}}
+	\only<3->{Initialization at leaf nodes:
+	$\mu_{x \rightarrow f}(x) = 0$, $\mu_{f \rightarrow x}(x) = \ln f(x)$}
 \end{frame}
 
 \begin{frame}{Message passing: Discussion}
-	\begin{itemize}
+	\begin{itemize}[<+->]
 		\item Linear complexity in the number of involved variables
 		\item Only exact for trees
 		\item In general graphs: Loopy belief propagation
-		\item (Linearized message passing)
+		\item Linearized message passing
 	\end{itemize}
 \end{frame}
 
-\begin{frame}{Expectation propagation: Methodology}
+\section{Expecatation propagation}
+
+\begin{frame}[t]{Expectation propagation: Methodology}
 	Approximate posterior distribution:
 	\begin{equation*}
 	p(\theta|\mathbf{D}) = \frac{1}{p(\mathbf{D})} p(\theta, \mathbf{D}) = \frac{1}{p(\mathbf{D})} \prod_i f_i(\theta , \mathbf{D})
 	\end{equation*}
-	Approximating function from exponential family:
+	\only<2->{Approximating function from exponential family:
 	\begin{equation*}
 	q(\theta) = \frac{1}{Z}\prod_i \tilde{f}_i(\theta)
-	\end{equation*}
-	Minimize KL divergence $KL(p||q)$: Moment matching!
+	\end{equation*}}
+	\only<3->{	Minimize KL divergence $KL(p||q)$: Moment matching!}
 \end{frame}
 
-\begin{frame}{Expectation propagation: Algorithm}
+\begin{frame}[t]{Expectation propagation: Algorithm}
 	Approximating function:
 	\begin{equation*}
 	q(\theta) = \frac{1}{Z}\prod_i \tilde{f}_i(\theta)
 	\end{equation*}
-	Iteratively refine one factor at a time:
+	\only<2->{Iteratively refine one factor at a time:
 	\begin{equation*}
 	\begin{split}
 	q^{\backslash j}(\theta) &= \prod_{i\ne j} \tilde{f}_i(\theta)\\
 	q^{new}(\theta) & \propto f_j ~ q^{\backslash j}(\theta)\\
 	\tilde{f}_j &= \frac{1}{Z_j} \frac{q^{new}(\theta)}{q^{\backslash j}(\theta)}
 	\end{split}
-	\end{equation*}
+	\end{equation*}}
 
 \end{frame}
 
 \begin{frame}{Expectation propagation: Discussion}
-	\begin{itemize}
-		\item Can be applied to general distribution
+	\begin{itemize}[<+->]
+		\item Can be applied to general distributions
 		\item Expectation propagation is not guaranteed to converge
 		\item If EP converges, it often outperforms VI
+		\item sum-product algorithm as special case of EP with fully factorized approximation function
 	\end{itemize}
 
 \end{frame}
 
-\begin{frame}{EP vs. VI}
+\begin{frame}[t]{EP vs. VI}
 	Expectation propagation: Minimize $KL(p||q) = \int p \ln \frac{p}{q}$\\
 	~\\
 	Variational inference: Minimize $KL(q||p)  = \int q \ln \frac{q}{p}$
+	\only<2->{
 	\begin{figure}[h]
 		\begin{center}
 			\includegraphics[scale=0.15]{../multimodal_approximation.png}
 		\end{center}
 	\end{figure}
-	\small{Figure taken from Bishop: Pattern Recognition and Machine Learning.}
+	\small{Figure taken from Bishop: Pattern Recognition and Machine Learning.}}
 	
 \end{frame}
 
