@@ -5,7 +5,7 @@
 \usepackage{pgfplots}         % Plots in Latex
 \usepackage{amsmath, amssymb} % Math formulas and symbols
 \usepackage{tikz}
-\usetikzlibrary{arrows}
+\usetikzlibrary{arrows,shapes}
 
 \title[Passing and propagation]{Message passing and expectation propagation}
 %\subtitle{Presentation subtitle}
@@ -24,26 +24,57 @@ Data Mining and Analytics\\
     \thispagestyle{empty}
 \end{frame}
 
-
-
-\begin{frame}[t]{Motivation}
+\begin{frame}{Overview}
 	Graphical models: Bayesian networks and Markov random fields\\
-	\centering
-	\begin{columns}[c] % the "c" option specifies center vertical alignment
-		\column{.5\textwidth} 
-		\only<2->{\includegraphics[scale=0.25]{BN_example.png}}
-		\column{.5\textwidth} 
-		\only<3->{\includegraphics[scale=0.25]{MRF_example.jpg}} 
-	\end{columns}
+	\begin{equation*}
+	p(X)= \prod_{s} f_s(X_s)
+	\end{equation*}
 	
-	\raggedright
-	\tiny{\only<2->{Image sources:\\
-		http://www.bayesia.com/hs-fs/hubfs/Bayesian\_Networks/Fig\_2\_2\_Sprinkler.png?t=1495201256220\\\&width=450\&height=626\&name=Fig\_2\_2\_Sprinkler.png\\}
-	\only<3->{http://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL\_COPIES/AV0809/ORCHARD/mrf.jpg}}
+	Inference in graphical models:\\
+	\begin{itemize}
+		\item Marginalization
+		\item Maximum aposteriori extimation
+		\item Posterior approximation
+	\end{itemize}
+	
+
+\end{frame}
+
+\begin{frame}[t]{Motivation for marginalization}
+	Simple (but cool) example:\\
+	
+	\begin{figure}
+		\begin{tikzpicture}
+		
+		\tikzset{vertex/.style = {shape=ellipse,draw,minimum size=1.5em}}
+		\tikzset{edge/.style = {->,> = latex'}}
+		
+		\node[vertex] (x1) at  (0,0) {Anikan turns evil};
+		\node[vertex] (x2) at  (0,-2) {Imperator has started Order 66};
+		\node[vertex] (x3) at  (0,-4) {Yoda is attacked};
+		
+		\draw[edge] (x1) to (x2);
+		\draw[edge] (x2) to (x3);
+		\end{tikzpicture}
+	\end{figure}
+	%\centering
+	%\begin{columns}[c] % the "c" option specifies center vertical alignment
+%		\column{.5\textwidth} 
+%		\only<2->{\includegraphics[scale=0.25]{BN_example.png}}
+%		\column{.5\textwidth} 
+%		\only<3->{\includegraphics[scale=0.25]{MRF_example.jpg}} 
+%	\end{columns}
+%	
+%	\raggedright
+%	\tiny{\only<2->{Image sources:\\
+%%ttp://www.bayesia.com/hs-fs/hubfs/Bayesian\_Networks/Fig\_2\_2\_Sprinkler.png?t=1495201256220\\\&width=450\&height=626\&name=Fig\_2\_2\_Sprinkler.png\\}
+%	\only<3->{http://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL\_COPIES/AV0809/ORCHARD/mrf.jpg}}
 \end{frame}
 
 \begin{frame}[t]{Factor graph}
-	Bayesian network: $p(X) =  p(x_1) p(x_2|x_1) p(x_3|x_1)$\\
+	More formally:\\
+	\centering
+	$p(X) =  p(x_1) p(x_2|x_1) p(x_3|x_1)$\\
 	\begin{figure}
 		\begin{tikzpicture}
 		
@@ -59,7 +90,7 @@ Data Mining and Analytics\\
 		\end{tikzpicture}
 	\end{figure}
 	\only<2->{
-		Corresponding factor graph:
+		A corresponding factor graph: $f_1 = p(x_1)p(x_2|x_1)$, $f_2 = p(x_3|x_2)$
 		\begin{figure}
 			\centering
 			\begin{tikzpicture}
@@ -67,51 +98,65 @@ Data Mining and Analytics\\
 			\tikzset{edge/.style = {-,> = latex'}}
 			
 			\node[vertex] (x1) at  (0,0) {$x_1$};
-			\node[vertex] (x2) at  (2,0) {$x_2$};
-			\node[vertex] (x3) at  (4,0) {$x_3$};
+			\node[vertex] (x2) at  (4,0) {$x_2$};
+			\node[vertex] (x3) at  (8,0) {$x_3$};
 			
 			\tikzset{vertex/.style = {shape = rectangle,fill = gray!40,minimum size=2em}}
-			\node[vertex] (f1) at  (-1,2) {$f_1$};
-			\node[vertex] (f2) at  (1,2) {$f_2$};
-			\node[vertex] (f3) at  (3,2) {$f_3$};
+			%\node[vertex] (f1) at  (-1,2) {$f_1$};
+			\node[vertex] (f2) at  (2,0) {$f_1$};
+			\node[vertex] (f3) at  (6,0) {$f_2$};
 			
-			\draw[edge] (x1) to (f1);
+			%\draw[edge] (x1) to (f1);
 			\draw[edge] (x1) to (f2);
 			\draw[edge] (x2) to (f2);
 			\draw[edge] (x2) to (f3);
 			\draw[edge] (x3) to (f3);
 			\end{tikzpicture}
-		\end{figure}}
+		\end{figure}
+	
+	\begin{equation*}
+	p(X)= \prod_{s} f_s(X_s)
+	\end{equation*}}
 	\end{frame}
 	
 \section{Message passing}
 
 \begin{frame}[t]{Message passing: Idea}
-	~\\
-	Bayesian network: $p(X) =  p(x_1) p(x_2|x_1) p(x_3|x_1)$\\
+	
+	\begin{equation*}
+	p(X)= \prod_{s} f_s(X_s)
+	\end{equation*}
 	\begin{figure}
-	\begin{tikzpicture}
-	
-	\tikzset{vertex/.style = {shape=circle,draw,minimum size=1.3em}}
-	\tikzset{edge/.style = {->,> = latex'}}
-	
-	\node[vertex] (x1) at  (0,0) {$x_1$};
-	\node[vertex] (x2) at  (2,0) {$x_2$};
-	\node[vertex] (x3) at  (4,0) {$x_3$};
-	
-	\draw[edge] (x1) to (x2);
-	\draw[edge] (x2) to (x3);
-	\end{tikzpicture}
+		\centering
+		\begin{tikzpicture}
+		\tikzset{vertex/.style = {shape=circle,draw,minimum size=1.5em}}
+		\tikzset{edge/.style = {-,> = latex'}}
+		
+		\node[vertex] (x1) at  (0,0) {$x_1$};
+		\node[vertex] (x2) at  (4,0) {$x_2$};
+		\node[vertex] (x3) at  (8,0) {$x_3$};
+		
+		\tikzset{vertex/.style = {shape = rectangle,fill = gray!40,minimum size=2em}}
+		%\node[vertex] (f1) at  (-1,2) {$f_1$};
+		\node[vertex] (f2) at  (2,0) {$f_1$};
+		\node[vertex] (f3) at  (6,0) {$f_2$};
+		
+		%\draw[edge] (x1) to (f1);
+		\draw[edge] (x1) to (f2);
+		\draw[edge] (x2) to (f2);
+		\draw[edge] (x2) to (f3);
+		\draw[edge] (x3) to (f3);
+		\end{tikzpicture}
 	\end{figure}
 	
 	\only<2->{Marginalization naive:
 	\begin{equation*}
-	p(x_2)= \sum_{X \setminus x_2} p(X)
+	p(x_2)= \sum_{x_1} \sum_{x_3} p(X) \in \mathcal{O}(k^n)
 	\end{equation*}}
 	\only<3->{Marginalization advanced:
 	\begin{equation*}
 	\begin{split}
-	p(x_2) &= \sum_{x_1} \sum_{x_3} p(x_1) p(x_2|x_1) p(x_3|x_2) \\ &= \underbrace{\Big[ \sum_{x_1}  p(x_1) p(x_2|x_1)\Big]}_{\mu_{x_1 \rightarrow x_2}}\cdot \underbrace{\Big[ \sum_{x_3}  p(x_3|x_2)\Big]}_{\mu_{x_3 \rightarrow x_2}}
+	p(x_2) &= \sum_{x_1} \sum_{x_3} p(x_1) p(x_2|x_1) p(x_3|x_2) \\ &= \underbrace{\Big[ \sum_{x_1}  p(x_1) p(x_2|x_1)\Big]}_{\mu_{f_1 \rightarrow x_2}}\cdot \underbrace{\Big[ \sum_{x_3}  p(x_3|x_2)\Big]}_{\mu_{f_2 \rightarrow x_2}} \in \mathcal{O}(n \cdot k^2)
 	\end{split}
 	\end{equation*}}
 \end{frame}
@@ -119,9 +164,7 @@ Data Mining and Analytics\\
 \begin{frame}[t]{Sum-product algorithm 1}
 	General marginalization:
 	\begin{equation*}\label{eq:message1}
-	\begin{split}
-	p(x_i) &= \sum_{X \setminus x_i} \Big[ \prod_{s \in ne(x_i)} F_s(x_i, X_s) \Big] = \prod_{s \in ne(x_i)} \Big[ \underbrace{\sum_{X_s} F_s(x_i, X_s)}_{\mu_{f_s \rightarrow x_i}(x_i)}\Big]% =: \prod_{s \in ne(x_i)} \mu_{f_s \rightarrow x_i}(x_i)
-	\end{split}
+	p(x_i) = \prod_{s \in ne(x_i)} \mu_{f_s \rightarrow x_i}(x_i)
 	\end{equation*}
 	\begin{figure}[h]
 		\centering
@@ -130,27 +173,35 @@ Data Mining and Analytics\\
 		\definecolor{darkgreen}{RGB}{59,136,59}
 		
 		\tikzstyle{edge} = [draw,-]
-		\fill[green!20]   (0:-1.2) circle (1.8);
-		\node[darkgreen] (text) at (-0.6,1) {$F_s(x_i,X_s)$};
+		%\fill[green!20]   (0:-1.2) circle (1.8);
+		%\node[darkgreen] (text) at (-0.6,1) {$F_s(x_i,X_s)$};
 		
-		\fill[green!20]   (4.1,-1.1) circle (0.8);
-		\fill[green!20]   (4.1,1.1) circle (0.8);
+		%\fill[green!20]   (4.1,-1.1) circle (0.8);
+		%\fill[green!20]   (4.1,1.1) circle (0.8);
 		
 		\tikzset{vertex/.style = {shape=circle,draw,minimum size=2em}}
 		\node[vertex] (xi) at  (2,0) {$x_i$};
 		\node[vertex] (xl1) at  (-2,-1) {};
 		\node[vertex] (xl2) at  (-2,1) {};
+		%\node[vertex] (xrr1) at  (6,-2) {};
+		%\node[vertex] (xrr2) at  (6,0) {};
 		
 		\tikzset{vertex/.style = {shape = rectangle,fill = gray!40,minimum size=2em}}
-		\node[vertex] (fs) at  (0,0) {$f_s$};
+		\node[vertex] (fs) at  (0,0) {};
 		\node[vertex] (xr1) at  (4,-1) {};
 		\node[vertex] (xr2) at  (4,1) {};
+		%\node[vertex] (xll1) at  (-4,-2) {};
+		%\node[vertex] (xll2) at  (-4,0) {};
 		
 		\draw[edge] (fs) to (xi);
 		\draw[edge] (xi) to (xr1);
 		\draw[edge] (xi) to (xr2);
 		\draw[edge] (fs) to (xl1);
 		\draw[edge] (fs) to (xl2);
+		%\draw[edge] (xr1) to (xrr1);
+		%\draw[edge] (xr1) to (xrr2);
+		%\draw[edge] (xl1) to (xll1);
+		%\draw[edge] (xl1) to (xll2);
 		\draw[edge, loosely dotted] (xr1) to (xr2);
 		\draw[edge, loosely dotted] (xl1) to (xl2);
 		\end{tikzpicture}
@@ -166,13 +217,116 @@ Data Mining and Analytics\\
 	\end{split}
 	\end{equation*}
 	
+	\begin{figure}[h]
+		\centering
+		\begin{tikzpicture}
+		
+		\definecolor{darkgreen}{RGB}{59,136,59}
+		
+		\tikzstyle{edge} = [draw,-]
+		%\fill[green!20]   (0:-1.2) circle (1.8);
+		%\node[darkgreen] (text) at (-0.6,1) {$F_s(x_i,X_s)$};
+		
+		%\fill[green!20]   (4.1,-1.1) circle (0.8);
+		%\fill[green!20]   (4.1,1.1) circle (0.8);
+		
+		\tikzset{vertex/.style = {shape=circle,draw,minimum size=2em}}
+		\node[vertex] (xi) at  (2,0) {$x_i$};
+		\node[vertex] (xl1) at  (-2,-1) {};
+		\node[vertex] (xl2) at  (-2,1) {};
+		%\node[vertex] (xrr1) at  (6,-2) {};
+		%\node[vertex] (xrr2) at  (6,0) {};
+		
+		\tikzset{vertex/.style = {shape = rectangle,fill = gray!40,minimum size=2em}}
+		\node[vertex] (fs) at  (0,0) {$f_s$};
+		\node[vertex] (xr1) at  (4,-1) {};
+		\node[vertex] (xr2) at  (4,1) {};
+		%\node[vertex] (xll1) at  (-4,-2) {};
+		%\node[vertex] (xll2) at  (-4,0) {};
+		
+		\draw[edge] (fs) to (xi);
+		\draw[edge] (xi) to (xr1);
+		\draw[edge] (xi) to (xr2);
+		\draw[edge] (fs) to (xl1);
+		\draw[edge] (fs) to (xl2);
+		%\draw[edge] (xr1) to (xrr1);
+		%\draw[edge] (xr1) to (xrr2);
+		%\draw[edge] (xl1) to (xll1);
+		%\draw[edge] (xl1) to (xll2);
+		\draw[edge, loosely dotted] (xr1) to (xr2);
+		\draw[edge, loosely dotted] (xl1) to (xl2);
+		\end{tikzpicture}
+	\end{figure}
+
 	\only<2->{Initialization at leaf nodes:
-	$\mu_{x \rightarrow f}(x) = 1$, $\mu_{f \rightarrow x}(x) = f(x)$\\~\\}
-	\only<3->{Propagate messages through the graph!}
+		$\mu_{x \rightarrow f}(x) = 1$, $\mu_{f \rightarrow x}(x) = f(x)$}
+\end{frame}
+
+\begin{frame}{Message passing in action}
+	\begin{figure}[h]
+		\centering
+		\begin{tikzpicture}
+		
+		\definecolor{darkgreen}{RGB}{59,136,59}
+		
+		\tikzstyle{edge} = [draw,-]
+		%\fill[green!20]   (0:-1.2) circle (1.8);
+		%\node[darkgreen] (text) at (-0.6,1) {$F_s(x_i,X_s)$};
+		
+		%\fill[green!20]   (4.1,-1.1) circle (0.8);
+		%\fill[green!20]   (4.1,1.1) circle (0.8);
+		
+		\tikzset{vertex/.style = {shape=circle,draw,minimum size=2em}}
+		\node[vertex] (xi) at  (2,0) {$x_i$};
+		\node[vertex] (xl1) at  (-2,-1) {};
+		\node[vertex] (xl2) at  (-2,1) {};
+		\node[vertex] (xrr1) at  (6,-2) {};
+		\node[vertex] (xrr2) at  (6,0) {};
+		
+		\tikzset{vertex/.style = {shape = rectangle,fill = gray!40,minimum size=2em}}
+		\node[vertex] (fs) at  (0,0) {};
+		\node[vertex] (xr1) at  (4,-1) {};
+		\node[vertex] (xr2) at  (4,1) {};
+		\node[vertex] (xll1) at  (-4,-2) {};
+		\node[vertex] (xll2) at  (-4,0) {};
+		
+		\draw[edge] (fs) to (xi);
+		\draw[edge] (xi) to (xr1);
+		\draw[edge] (xi) to (xr2);
+		\draw[edge] (fs) to (xl1);
+		\draw[edge] (fs) to (xl2);
+		\draw[edge] (xr1) to (xrr1);
+		\draw[edge] (xr1) to (xrr2);
+		\draw[edge] (xl1) to (xll1);
+		\draw[edge] (xl1) to (xll2);
+		%\draw[edge, loosely dotted] (xr1) to (xr2);
+		%\draw[edge, loosely dotted] (xl1) to (xl2);
+		\end{tikzpicture}
+	\end{figure}
+\end{frame}
+
+\begin{frame}[t]{Maximum aposteriori estimation}
+	\begin{figure}
+		\begin{tikzpicture}
+		
+		\tikzset{vertex/.style = {shape=ellipse,draw,minimum size=1.5em}}
+		\tikzset{edge/.style = {->,> = latex'}}
+		
+		\node[vertex] (x1) at  (0,0) {Anikan turns evil};
+		\node[vertex] (x2) at  (0,-2) {Imperator has started Order 66};
+		\node[vertex] (x3) at  (0,-4) {Yoda is attacked};
+		
+		\draw[edge] (x1) to (x2);
+		\draw[edge] (x2) to (x3);
+		\end{tikzpicture}
+	\end{figure}
+	\only<2>{\begin{equation*}\label{eq:map_problem}
+	X^* = \underset{X}{\arg\max}~ p(X)
+	\end{equation*}}
 \end{frame}
 
 \begin{frame}[t]{Max-sum algorithm}
-	Maximum aposteriori estimate:
+	Maximum aposteriori estimation:
 	\begin{equation*}\label{eq:map_problem}
 	X^* = \underset{X}{\arg\max}~ p(X) = \underset{X}{\arg\max}~ \ln (p(X))
 	\end{equation*}
@@ -184,7 +338,8 @@ Data Mining and Analytics\\
 	\end{split}
 	\end{equation*}}
 	\only<3->{Initialization at leaf nodes:
-	$\mu_{x \rightarrow f}(x) = 0$, $\mu_{f \rightarrow x}(x) = \ln f(x)$}
+	$\mu_{x \rightarrow f}(x) = 0$, $\mu_{f \rightarrow x}(x) = \ln f(x)$\\~\\}
+	\only<4->{Keep track of maximal X values!}
 \end{frame}
 
 \begin{frame}{Message passing: Discussion}
@@ -196,12 +351,30 @@ Data Mining and Analytics\\
 	\end{itemize}
 \end{frame}
 
-\section{Expecatation propagation}
+\section{Expectation propagation}
+\begin{frame}{Motivation for approximate inference}
+	Image de-noising:\\
+	\centering
+	%\begin{columns}[c] % the "c" option specifies center vertical alignment
+	%		\column{.5\textwidth} 
+	%		\only<2->{\includegraphics[scale=0.25]{BN_example.png}}
+	%		\column{.5\textwidth} 
+	\includegraphics[scale=0.3]{de-noising.png}\\ 
+	$\mathbf{X}$ true image, $\mathbf{Y}$ noisy observation\\~\\
+	%	\end{columns}
+	%	
+	%	\raggedright
+	%	\tiny{\only<2->{Image sources:\\
+	%%ttp://www.bayesia.com/hs-fs/hubfs/Bayesian\_Networks/Fig\_2\_2\_Sprinkler.png?t=1495201256220\\\&width=450\&height=626\&name=Fig\_2\_2\_Sprinkler.png\\}
+	%	
+	\tiny{Figure taken from Bishop: Pattern Recognition and Machine Learning.}
+\end{frame}
+
 
 \begin{frame}[t]{Expectation propagation: Methodology}
 	Approximate posterior distribution:
 	\begin{equation*}
-	p(\theta|\mathbf{D}) = \frac{1}{p(\mathbf{D})} p(\theta, \mathbf{D}) = \frac{1}{p(\mathbf{D})} \prod_i f_i(\theta , \mathbf{D})
+	p(\mathbf{X}|\mathbf{Y}) = \frac{1}{p(\mathbf{Y})} p(\mathbf{X}, \mathbf{Y}) = \frac{1}{Z} \prod_i f_i(\theta)
 	\end{equation*}
 	\only<2->{Approximating function from exponential family:
 	\begin{equation*}
@@ -228,10 +401,8 @@ Data Mining and Analytics\\
 
 \begin{frame}{Expectation propagation: Discussion}
 	\begin{itemize}[<+->]
-		\item Can be applied to general distributions
 		\item Expectation propagation is not guaranteed to converge
 		\item If EP converges, it often outperforms VI
-		\item sum-product algorithm as special case of EP with fully factorized approximation function
 	\end{itemize}
 
 \end{frame}
@@ -246,7 +417,7 @@ Data Mining and Analytics\\
 			\includegraphics[scale=0.15]{../multimodal_approximation.png}
 		\end{center}
 	\end{figure}
-	\small{Figure taken from Bishop: Pattern Recognition and Machine Learning.}}
+	\tiny{Figure taken from Bishop: Pattern Recognition and Machine Learning.}}
 	
 \end{frame}
 
