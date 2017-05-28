@@ -33,15 +33,15 @@ Data Mining and Analytics\\
 	Inference in graphical models:\\
 	\begin{itemize}
 		\item Marginalization
-		\item Maximum aposteriori extimation
+		\item Maximum aposteriori estimation
 		\item Posterior approximation
 	\end{itemize}
 	
 
 \end{frame}
 
-\begin{frame}[t]{Motivation for marginalization}
-	Simple (but cool) example:\\
+\begin{frame}{Motivation for marginalization}
+	
 	
 	\begin{figure}
 		\begin{tikzpicture}
@@ -49,12 +49,16 @@ Data Mining and Analytics\\
 		\tikzset{vertex/.style = {shape=ellipse,draw,minimum size=1.5em}}
 		\tikzset{edge/.style = {->,> = latex'}}
 		
-		\node[vertex] (x1) at  (0,0) {Anikan turns evil};
-		\node[vertex] (x2) at  (0,-2) {Imperator has started Order 66};
-		\node[vertex] (x3) at  (0,-4) {Yoda is attacked};
+		\node[vertex] (x1) at  (3,-2) {Smoking guest};
+		\node[vertex] (x2) at  (-3,-2) {Hostel is burning};
+		\node[vertex] (x3) at  (0,-4) {Firealarm};
+		\node[vertex] (x4) at  (-0.5,-1) {Open door in kitchen};
+		%\node[vertex] (x5) at  (-0.5,1) {Breakfast is prepared};
 		
-		\draw[edge] (x1) to (x2);
+		\draw[edge] (x1) to (x3);
 		\draw[edge] (x2) to (x3);
+		\draw[edge] (x4) to (x3);
+		%\draw[edge] (x5) to (x4);
 		\end{tikzpicture}
 	\end{figure}
 	%\centering
@@ -72,7 +76,7 @@ Data Mining and Analytics\\
 \end{frame}
 
 \begin{frame}[t]{Factor graph}
-	More formally:\\
+	More simple and formally:\\
 	\centering
 	$p(X) =  p(x_1) p(x_2|x_1) p(x_3|x_1)$\\
 	\begin{figure}
@@ -90,7 +94,7 @@ Data Mining and Analytics\\
 		\end{tikzpicture}
 	\end{figure}
 	\only<2->{
-		A corresponding factor graph: $f_1 = p(x_1)p(x_2|x_1)$, $f_2 = p(x_3|x_2)$
+		A corresponding factor graph: $f_1 = p(x_1)$, $f_2=p(x_2|x_1)$, $f_2 = p(x_3|x_2)$
 		\begin{figure}
 			\centering
 			\begin{tikzpicture}
@@ -102,11 +106,11 @@ Data Mining and Analytics\\
 			\node[vertex] (x3) at  (8,0) {$x_3$};
 			
 			\tikzset{vertex/.style = {shape = rectangle,fill = gray!40,minimum size=2em}}
-			%\node[vertex] (f1) at  (-1,2) {$f_1$};
-			\node[vertex] (f2) at  (2,0) {$f_1$};
-			\node[vertex] (f3) at  (6,0) {$f_2$};
+			\node[vertex] (f1) at  (-2,0) {$f_1$};
+			\node[vertex] (f2) at  (2,0) {$f_2$};
+			\node[vertex] (f3) at  (6,0) {$f_3$};
 			
-			%\draw[edge] (x1) to (f1);
+			\draw[edge] (x1) to (f1);
 			\draw[edge] (x1) to (f2);
 			\draw[edge] (x2) to (f2);
 			\draw[edge] (x2) to (f3);
@@ -137,11 +141,11 @@ Data Mining and Analytics\\
 		\node[vertex] (x3) at  (8,0) {$x_3$};
 		
 		\tikzset{vertex/.style = {shape = rectangle,fill = gray!40,minimum size=2em}}
-		%\node[vertex] (f1) at  (-1,2) {$f_1$};
-		\node[vertex] (f2) at  (2,0) {$f_1$};
-		\node[vertex] (f3) at  (6,0) {$f_2$};
+		\node[vertex] (f1) at  (-2,0) {$f_1$};
+		\node[vertex] (f2) at  (2,0) {$f_2$};
+		\node[vertex] (f3) at  (6,0) {$f_3$};
 		
-		%\draw[edge] (x1) to (f1);
+		\draw[edge] (x1) to (f1);
 		\draw[edge] (x1) to (f2);
 		\draw[edge] (x2) to (f2);
 		\draw[edge] (x2) to (f3);
@@ -156,7 +160,7 @@ Data Mining and Analytics\\
 	\only<3->{Marginalization advanced:
 	\begin{equation*}
 	\begin{split}
-	p(x_2) &= \sum_{x_1} \sum_{x_3} p(x_1) p(x_2|x_1) p(x_3|x_2) \\ &= \underbrace{\Big[ \sum_{x_1}  p(x_1) p(x_2|x_1)\Big]}_{\mu_{f_1 \rightarrow x_2}}\cdot \underbrace{\Big[ \sum_{x_3}  p(x_3|x_2)\Big]}_{\mu_{f_2 \rightarrow x_2}} \in \mathcal{O}(n \cdot k^2)
+	p(x_2) &= \sum_{x_1} \sum_{x_3} p(x_1) p(x_2|x_1) p(x_3|x_2) \\ &= \underbrace{\Big[ \sum_{x_1}  p(x_1) p(x_2|x_1)\Big]}_{\mu_{f_2 \rightarrow x_2}}\cdot \underbrace{\Big[ \sum_{x_3}  p(x_3|x_2)\Big]}_{\mu_{f_3 \rightarrow x_2}} \in \mathcal{O}(n \cdot k^2)
 	\end{split}
 	\end{equation*}}
 \end{frame}
@@ -290,6 +294,11 @@ Data Mining and Analytics\\
 		\node[vertex] (xll1) at  (-4,-2) {};
 		\node[vertex] (xll2) at  (-4,0) {};
 		
+		
+		\draw[edge] (xl1) to (xll1);
+		\draw[edge] (xl1) to (xll2);
+		
+		
 		\draw[edge] (fs) to (xi);
 		\draw[edge] (xi) to (xr1);
 		\draw[edge] (xi) to (xr2);
@@ -297,8 +306,41 @@ Data Mining and Analytics\\
 		\draw[edge] (fs) to (xl2);
 		\draw[edge] (xr1) to (xrr1);
 		\draw[edge] (xr1) to (xrr2);
-		\draw[edge] (xl1) to (xll1);
-		\draw[edge] (xl1) to (xll2);
+		
+		
+		\only<2-4>{
+			\draw[edge, red, <-] (xl1) to (xll1);
+			\draw[edge, red, <-] (xl1) to (xll2);
+			\draw[edge, red, <-] (xr1) to (xrr1);
+			\draw[edge, red, <-] (xr1) to (xrr2);
+			\draw[edge, red, <-] (fs) to (xl2);
+			\draw[edge, red, <-] (xi) to (xr2);
+	}
+		
+		\only<3-4>{
+			\draw[edge, blue, <-] (fs) to (xl1);
+			\draw[edge, blue, <-] (xi) to (xr1);
+		}
+		\only<4-4>{
+			\draw[edge, green, <-] (xi) to (fs);
+		}
+	
+		\only<5->{
+			\draw[edge, orange, ->] (xi) to (xr2);
+			\draw[edge, orange, ->] (xi) to (xr1);
+			\draw[edge, orange, ->] (xi) to (fs);
+		}
+	
+		\only<6->{
+			\draw[edge, orange, ->] (xr1) to (xrr2);
+			\draw[edge, orange, ->] (xr1) to (xrr1);
+			\draw[edge, orange, ->] (fs) to (xl1);
+			\draw[edge, orange, ->] (fs) to (xl2);
+		}
+%		\only<7->{
+%			\draw[edge, violet, ->] (xl1) to (xll2);
+%			\draw[edge, violet, ->] (xl1) to (xll1);
+%		}
 		%\draw[edge, loosely dotted] (xr1) to (xr2);
 		%\draw[edge, loosely dotted] (xl1) to (xl2);
 		\end{tikzpicture}
@@ -307,19 +349,23 @@ Data Mining and Analytics\\
 
 \begin{frame}[t]{Maximum aposteriori estimation}
 	\begin{figure}
-		\begin{tikzpicture}
-		
-		\tikzset{vertex/.style = {shape=ellipse,draw,minimum size=1.5em}}
-		\tikzset{edge/.style = {->,> = latex'}}
-		
-		\node[vertex] (x1) at  (0,0) {Anikan turns evil};
-		\node[vertex] (x2) at  (0,-2) {Imperator has started Order 66};
-		\node[vertex] (x3) at  (0,-4) {Yoda is attacked};
-		
-		\draw[edge] (x1) to (x2);
-		\draw[edge] (x2) to (x3);
-		\end{tikzpicture}
-	\end{figure}
+	\begin{tikzpicture}
+	
+	\tikzset{vertex/.style = {shape=ellipse,draw,minimum size=1.5em}}
+	\tikzset{edge/.style = {->,> = latex'}}
+	
+	\node[vertex] (x1) at  (3,-2) {Smoking guest};
+	\node[vertex] (x2) at  (-3,-2) {Hostel is burning};
+	\node[vertex] (x3) at  (0,-4) {Firealarm};
+	\node[vertex] (x4) at  (-0.5,-1) {Open door in kitchen};
+	%\node[vertex] (x5) at  (-0.5,1) {Breakfast is prepared};
+	
+	\draw[edge] (x1) to (x3);
+	\draw[edge] (x2) to (x3);
+	\draw[edge] (x4) to (x3);
+	%\draw[edge] (x5) to (x4);
+	\end{tikzpicture}
+\end{figure}
 	\only<2>{\begin{equation*}\label{eq:map_problem}
 	X^* = \underset{X}{\arg\max}~ p(X)
 	\end{equation*}}
@@ -352,59 +398,85 @@ Data Mining and Analytics\\
 \end{frame}
 
 \section{Expectation propagation}
-\begin{frame}{Motivation for approximate inference}
-	Image de-noising:\\
-	\centering
+%\begin{frame}{Motivation for approximate inference}
+%	Image de-noising:\\
+%	\centering
 	%\begin{columns}[c] % the "c" option specifies center vertical alignment
 	%		\column{.5\textwidth} 
 	%		\only<2->{\includegraphics[scale=0.25]{BN_example.png}}
 	%		\column{.5\textwidth} 
-	\includegraphics[scale=0.3]{de-noising.png}\\ 
-	$\mathbf{X}$ true image, $\mathbf{Y}$ noisy observation\\~\\
+%	\includegraphics[scale=0.3]{de-noising.png}\\ 
+%	$\mathbf{X}$ true image, $\mathbf{Y}$ noisy observation\\~\\
 	%	\end{columns}
 	%	
 	%	\raggedright
 	%	\tiny{\only<2->{Image sources:\\
 	%%ttp://www.bayesia.com/hs-fs/hubfs/Bayesian\_Networks/Fig\_2\_2\_Sprinkler.png?t=1495201256220\\\&width=450\&height=626\&name=Fig\_2\_2\_Sprinkler.png\\}
 	%	
-	\tiny{Figure taken from Bishop: Pattern Recognition and Machine Learning.}
-\end{frame}
+%	\tiny{Figure taken from Bishop: Pattern Recognition and Machine Learning.}
+%\end{frame}
 
 
 \begin{frame}[t]{Expectation propagation: Methodology}
-	Approximate posterior distribution:
+	Intractable true posterior distribution:
 	\begin{equation*}
-	p(\mathbf{X}|\mathbf{Y}) = \frac{1}{p(\mathbf{Y})} p(\mathbf{X}, \mathbf{Y}) = \frac{1}{Z} \prod_i f_i(\theta)
+	p(X|\mathcal{D}) = \frac{1}{Z} \prod_i f_i(X)
 	\end{equation*}
 	\only<2->{Approximating function from exponential family:
 	\begin{equation*}
-	q(\theta) = \frac{1}{Z}\prod_i \tilde{f}_i(\theta)
+	q(X) = \frac{1}{Z}\prod_i \tilde{f}_i(X)
 	\end{equation*}}
-	\only<3->{	Minimize KL divergence $KL(p||q)$: Moment matching!}
+	\only<3->{	Minimize KL divergence:
+		\begin{equation*}
+		KL(p||q) = \int_X p(X) \ln \frac{p(X)}{q(X)}
+		\end{equation*}}
+	\centering
+	\only<4->{Moment matching!}
+\end{frame}
+
+\begin{frame}[t]{Expectation propagation: Minimize KL-divergence}
+	Complete function:
+	\begin{equation*}
+	KL \Big( \prod_{i} f_i(X) \Big| \Big| \prod_i \tilde{f}_i(X) \Big)~~~~\text{\textcolor{red}{intractable}}
+	\end{equation*}
+	\only<2->{All factors independently:
+		\begin{equation*}
+		KL \Big(f_i(X) \Big| \Big| \tilde{f}_i(X) \Big)~~~~\text{\textcolor{red}{simple, non-iterative, inaccurate}}
+		\end{equation*}}
+	\only<3->{
+	One factor at a time:
+	\begin{equation*}
+	KL \Big( \prod_{i} f_i(X) \Big| \Big| f_i(X) \cdot \prod_{j \ne i} \tilde{f}_j(X) \Big)~~~~\text{\textcolor{red}{simple, iterative, accurate}}
+	\end{equation*}
+	}
 \end{frame}
 
 \begin{frame}[t]{Expectation propagation: Algorithm}
-	Approximating function:
-	\begin{equation*}
-	q(\theta) = \frac{1}{Z}\prod_i \tilde{f}_i(\theta)
-	\end{equation*}
-	\only<2->{Iteratively refine one factor at a time:
-	\begin{equation*}
-	\begin{split}
-	q^{\backslash j}(\theta) &= \prod_{i\ne j} \tilde{f}_i(\theta)\\
-	q^{new}(\theta) & \propto f_j ~ q^{\backslash j}(\theta)\\
-	\tilde{f}_j &= \frac{1}{Z_j} \frac{q^{new}(\theta)}{q^{\backslash j}(\theta)}
-	\end{split}
-	\end{equation*}}
-
+	Input: $ \forall i: f_i(X)$\\~\\
+	Initialization: $\forall i: \tilde{f}_i(X) = 1$\\~\\
+	\only<2->{Iteratively refine one factor at a time until convergence:
+		\begin{equation*}
+		\begin{split}
+		q^{\backslash j}(\theta) &= \prod_{i\ne j} \tilde{f}_i(\theta)\\
+		q^{new}(\theta) & \propto f_j ~ q^{\backslash j}(\theta)\\
+		\tilde{f}_j &= \frac{1}{Z_j} \frac{q^{new}(\theta)}{q^{\backslash j}(\theta)}
+		\end{split}
+		\end{equation*}}
+	
 \end{frame}
 
-\begin{frame}{Expectation propagation: Discussion}
+\begin{frame}[t]{Expectation propagation: Discussion}
 	\begin{itemize}[<+->]
+		\item Can be applied to any graphical model
 		\item Expectation propagation is not guaranteed to converge
 		\item If EP converges, it often outperforms VI
+		\item Sum-product algorithm special case of EP with fully factorized approximation function
 	\end{itemize}
-
+	\only<5->{\begin{figure}[h]
+		\begin{center}
+			\includegraphics[scale=0.15]{loppyBPasEP.png}
+		\end{center}
+	\end{figure}}
 \end{frame}
 
 \begin{frame}[t]{EP vs. VI}
@@ -414,18 +486,29 @@ Data Mining and Analytics\\
 	\only<2->{
 	\begin{figure}[h]
 		\begin{center}
-			\includegraphics[scale=0.15]{../multimodal_approximation.png}
+			\includegraphics[scale=0.17]{../multimodal_approximation.png}
 		\end{center}
 	\end{figure}
 	\tiny{Figure taken from Bishop: Pattern Recognition and Machine Learning.}}
-	
 \end{frame}
 
 \begin{frame}{}
 	\centering
-    Thanks for your attention!\\
-    Questions?
+	Thanks for your attention!\\
+	Questions?
 \end{frame}
 
+\begin{frame}{Loopy BP as special case of EP}
+	\begin{figure}[h]
+		\begin{center}
+			\includegraphics[scale=0.15]{loppyBPasEP.png}
+		\end{center}
+	\end{figure}
+	\begin{itemize}[<+->]
+	\item Fully factorized approximation function
+	\item Refinement step in EP
+	\item If EP converges, it often outperforms VI
+\end{itemize}
+\end{frame}
 
 \end{document}
