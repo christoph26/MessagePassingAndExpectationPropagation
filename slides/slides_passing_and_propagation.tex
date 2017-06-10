@@ -216,7 +216,7 @@ Data Mining and Analytics\\
 	Local messages through factor graph:
 	\begin{equation*}
 	\begin{split}
-	\mu_{f_s \rightarrow x_i}(x_i) &= \sum_{\mathbf{x_s} \setminus x_i} f_s(x_i, X_s) \prod_{m \in ne(f_s) \setminus x_i} \mu_{x_m \rightarrow f_s}(x_m)\\
+	\mu_{f_s \rightarrow x_i}(x_i) &= \sum_{X_s \setminus x_i} f_s(x_i, X_s) \prod_{m \in ne(f_s) \setminus x_i} \mu_{x_m \rightarrow f_s}(x_m)\\
 	\mu_{x_m \rightarrow f_s}(x_m) &= \prod_{l \in ne(x_m) \setminus f_s} \mu_{f_l \rightarrow x_m}(x_m)
 	\end{split}
 	\end{equation*}
@@ -318,11 +318,11 @@ Data Mining and Analytics\\
 	}
 		
 		\only<3-4>{
-			\draw[edge, blue, <-] (fs) to (xl1);
-			\draw[edge, blue, <-] (xi) to (xr1);
+			\draw[edge, red, <-] (fs) to (xl1);
+			\draw[edge, red, <-] (xi) to (xr1);
 		}
 		\only<4-4>{
-			\draw[edge, green, <-] (xi) to (fs);
+			\draw[edge, red, <-] (xi) to (fs);
 		}
 	
 		\only<5->{
@@ -446,7 +446,7 @@ Data Mining and Analytics\\
 	\only<3->{
 	One factor at a time:
 	\begin{equation*}
-	KL \Big( \prod_{i} f_i(X) \Big| \Big| f_i(X) \cdot \prod_{j \ne i} \tilde{f}_j(X) \Big)~~~~\text{\textcolor{red}{simple, iterative, accurate}}
+	KL \Big(f_i(X) \cdot \prod_{j \ne i} \tilde{f}_j(X) \Big| \Big| \tilde{f}_i(X) \cdot \prod_{j \ne i} \tilde{f}_j(X) \Big)~~~~\text{\textcolor{red}{simple, iterative, accurate}}
 	\end{equation*}
 	}
 \end{frame}
