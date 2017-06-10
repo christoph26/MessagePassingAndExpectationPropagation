@@ -24,7 +24,7 @@
 
 % Abstract
 \begin{abstract}
-This paper explains two efficient Bayesian inference methods basing on a factorized version of a joint probability distribution. The two message passing algorithms "Max-sum" and Sum-product" enable exact inference in tree-shaped graphical models. The underlying concept of message passing can also be generalized to arbitrary graphs.
+This paper explains two efficient Bayesian inference methods basing on a factorized version of a joint probability distribution. The two message passing algorithms "Max-Sum" and Sum-Product" enable exact inference in tree-shaped graphical models. The underlying concept of message passing can also be generalized to arbitrary graphs.
 
 By expectation propagation a second approximate inference technique is covered. Similarly to variational inference it aims at minimizing the KL divergence of an approximating distribution. This is done in an iterative way leading to a useful approximate inference method for many situations.
 \end{abstract}
@@ -48,14 +48,14 @@ Probabilistic graphical models like Markov Random Fields or Bayesian Networks pr
 	\caption{Bayesian network with three variables. $x_1$ and $x_3$ are conditionally independent given $x_2$.}\label{fig:BN}
 \end{figure}
 
-Typical tasks in such a scenario are to do Bayesian inference to extract marginal distributions of specific variables or find maximum aposteriori estimates. However, with an increasing number of variables these task can become computationally very expensive. 
+Typical tasks in such a scenario are to do Bayesian inference to extract marginal distributions of specific variables or find maximum a posteriori estimates. However, with an increasing number of variables these task can become computationally very expensive. 
 
 The naive approach for marginalization is to sum out all but one variable from the joint distribution $p(X)$. This is formally shown in equation \ref{eq:marginalisation_naive}, where $X \setminus x_i$ describes the set of all random variables except $x_i$.
 This strategy requires exponentially many evaluations of the joint distribution in the number of variables and is thus not applicable to bigger networks.
 \begin{equation}\label{eq:marginalisation_naive}
 p(x_i)= \sum_{X \setminus x_i} p(X)
 \end{equation}
-Therefore, this paper explains more efficient algorithms to do large scale Bayesian inference in graphical models. Chapter \ref{chapter:exact_inference} deals with message passing and presents two belief propagation algorithms to calculate exact marginals and maximum aposteriori estimates for tree-shaped graphical models. Furthermore, generalized message passing approaches for arbitrary graphs are presented at the end of the chapter. Subsequently, in chapter \ref{chapter:approximate_inference} expectation propagation as a method of approximate inference is explained.
+Therefore, this paper explains more efficient algorithms to do large scale Bayesian inference in graphical models. Chapter \ref{chapter:exact_inference} deals with message passing and presents two belief propagation algorithms to calculate exact marginals and maximum a posteriori estimates for tree-shaped graphical models. Furthermore, generalized message passing approaches for arbitrary graphs are presented at the end of the chapter. Subsequently, in chapter \ref{chapter:approximate_inference} expectation propagation as a method of approximate inference is explained.
 
 Before the different inference approaches are explained in detail, the next section introduces factor graphs, the structure these algorithms operate on.
 
@@ -111,8 +111,8 @@ The brackets in the last line of equation \ref{eq:marginalization_smart} reveal 
 This message passing idea is the foundation for the two inference algorithms presented in this chapter subsequently.
 
 
-\subsection{Sum-product algorithm}
-The sum-product algorithm presented in this section generalizes the idea of exchanging summation and multiplication during marginalization. It consists of local messages passed between factor and variable nodes in a factor graph.
+\subsection{"Sum-Product" algorithm}
+The "Sum-Product" algorithm presented in this section generalizes the idea of exchanging summation and multiplication during marginalization. It consists of local messages passed between factor and variable nodes in a factor graph.
 
 As a starting point let us consider the calculation of the marginal distribution $p(x_i)$ in the factor graph of figure \ref{fig:message1}. Furthermore we define $F_s(s, X_s)$ for all neighbors $s$ of $x_i$ as the product of all factors in the respective sub-tree of the neighbor. This is visualized by green circles in figure \ref{fig:message1}.
 \begin{figure}[h]
@@ -263,7 +263,7 @@ for a message from a leave factor node to its neighboring variable node.
 
 Having explicit start values for messages from the leaves, messages can propagated through the factor graphs to an arbitrarily chosen root node. This root node has then received messages from all its neighbors and can thus calculate its marginal distribution according to \ref{eq:message1}. Analogously, passing all messages back from the root to all leave nodes enables to calculate the marginals of all variables in the factor graph. For this calculation two times the number of edges in the factor graph many messages have to be computed, which is linear in the number of variables of the model.\\
 
-\subsection{Max-sum algorithm}
+\subsection{"Max-Sum" algorithm}
 Next to computing marginal distributions, a frequent task is to find maximum a posteriori estimates. The aim is to finding values for all random variables, which maximize the joint probability distribution. This can be formulated mathematically as
 \begin{equation}\label{eq:map_problem}
 X^* = \underset{X}{\arg\max}~ p(X) = \underset{X}{\arg\max}~ \ln (p(X)).
@@ -274,9 +274,9 @@ p(X^*) = \underset{X}{\max}~ \ln (p(X)).
 \end{equation}
 
 
-The actual algorithm works similarly to the sum-product algorithm from the previous chapter, but with the exception that maximizations instead of sums over the random variables are performed. Analogously to before, the idea behind is to insert the factorized expression of the joint distribution from equation \ref{eq:product_of_neighbours} into the problem formulation from equation \ref{eq:map_problem2} and exchange maximization and multiplication.
+The actual algorithm works similarly to the "Sum-Product" algorithm from the previous chapter, but with the exception that maximizations instead of sums over the random variables are performed. Analogously to before, the idea behind is to insert the factorized expression of the joint distribution from equation \ref{eq:product_of_neighbours} into the problem formulation from equation \ref{eq:map_problem2} and exchange maximization and multiplication.
 
-The second step of equation \ref{eq:map_problem} contains a transformation, which allows a simplification. Since the logarithm is a strictly monotonic increasing function, it does not change the optimum $X^*$ but transforms the products in the messages to sums. Thus, the algorithm derived in this section is not called "max-product", which the analogy to the "sum-product" algorithm from the previous section would suggest, but "max-sum" algorithm.
+The second step of equation \ref{eq:map_problem} contains a transformation, which allows a simplification. Since the logarithm is a strictly monotonic increasing function, it does not change the optimum $X^*$ but transforms the products in the messages to sums. Thus, the algorithm derived in this section is not called "Max-Product", which the analogy to the "Sum-Product" algorithm from the previous section would suggest, but "Max-Sum" algorithm.
 
 Applying all discussed modification to the formulas deduced in the last chapter leads to the following messages:
 \begin{equation}\label{eq:map_m1}
@@ -300,17 +300,17 @@ Also the message initializations for leave nodes from equation \ref{eq:marg_init
 \end{equation}
 By propagating messages from all leave nodes to an arbitrarily chosen root node, the maximal value of the joint probability distribution can be calculated in that root node. The message passing is again done in a fashion, that a node can forward its message to its parent node as soon it has received messages from all children.
 
-The missing step is to find the variable configuration for the maximal joint probability. The central maximization is performed in equation \ref{eq:map_m1} over the variables of each factor before its message is passed further to the root. By saving the maximal configuration of each factor at this step, the values of the variables which give rise to the maximal joint probability can be obtained. In contrast to the sum-product algorithm, the max-sum algorithm does not require to propagate messages back from the root to all leaves.
+The missing step is to find the variable configuration for the maximal joint probability. The central maximization is performed in equation \ref{eq:map_m1} over the variables of each factor before its message is passed further to the root. By saving the maximal configuration of each factor at this step, the values of the variables which give rise to the maximal joint probability can be obtained. In contrast to the "Sum-Product" algorithm, the "Max-Sum" algorithm does not require to propagate messages back from the root to all leaves.
 
 \subsection{Discussion}
 The two algorithms require a fixed number of passes through the graph. Thus their computational complexity depends on the number of edges, which increases linearly with the number of involved random variables. Next to this factor, the computational cost of the two algorithms also consists a polynomial factor in the number of values, the discrete random variables can take.
 
-The big disadvantage of the sum-product and max-sum algorithms is that they only work on trees-shaped graphical models. To overcome this, the next section presents approaches to overcome this and do inference via message passing in general graphs.
+The big disadvantage of the "Sum-Product" and "Max-Sum" algorithms is that they only work on trees-shaped graphical models. To overcome this, the next section presents approaches to overcome this and do inference via message passing in general graphs.
 
 \subsection{Inference via message passing in general graphs}
-The discussed inference methods only produce valid results for trees. However, since the algorithms only consist of local messages passed through the graph, they can also be applied to graphs which contain circles. This is called "loopy belief propagation". For that, all messages need to be initialized by the unit function and a message passing schedule must be defined to state the order in which the messages are passed through the graph.
+The discussed inference methods only produce valid results for trees. However, since the algorithms only consist of local messages passed through the graph, they can also be applied to graphs which contain circles. This is called "loopy belief propagation". For that, all messages need to be initialized by the unit function and a message passing schedule must be defined to state the order in which the messages are passed through the graph. Then, local messages can be passed through the graph multiple times until marginals or maximum a posteriori estimates can be extracted.
 
-With circles in the graph, loopy belief propagation is not guaranteed to converge. In some situations it produces only poor results, while in other situations the final outcome turned out to be quite accurate. Certain error-correcting codes for example are equivalent to loopy belief propagation.
+With circles in the graph, loopy belief propagation is not guaranteed to converge. Messages can also start to oscillate or converge to wrong values. In some situations loopy belief propagation produces only poor results, while in other situations the final outcome turned out to be quite accurate. Certain error-correcting codes for example are equivalent to loopy belief propagation.
 
 There are also algorithms, which generalize the message passing idea to work for arbitrary graphs. The junction tree algorithm resolves circles in a general graph by a triangulation step and extraction of a maximal spanning tree. Depending on the underlying graph the algorithm requires exponential effort, but is efficient from the perspective that there are generally no cheaper approaches for exact inference in arbitrary graphs.
 
@@ -330,7 +330,7 @@ must be chosen. With that the KL divergence becomes
 \begin{equation}\label{eq:ep2}
 KL(p||q)= - \ln g(\eta) - \eta^T \mathbf{E}_{p(\mathbf{z})} [u(\mathbf{z})] + const.
 \end{equation}
-The distribution $q(\mathbf{z})$, which minimizes this KL divergence from equation \ref{eq:ep2}, can be constructed by moment matching. If $q(\mathbf{z})$ is a Gaussian for example, its mean corresponds to the mean of $p(\mathbf{z})$ and its covariance is equal to the covariance of $p(\mathbf{z})$.
+The distribution $q(\mathbf{z})$, which minimizes this KL divergence from equation \ref{eq:ep2}, can be constructed by moment matching. Formulated differently, the distribution $q(\mathbf{z})$ from the exponential family, whose the natural parameters are equal to the moments of the true distribution $p(\mathbf{z})$ we want to approximate, minimizes the KL divergence from equation \ref{eq:ep2}. If $q(\mathbf{z})$ is a Gaussian for example, its optimal mean corresponds to the mean of $p(\mathbf{z})$ and its optimal covariance is equal to the covariance of $p(\mathbf{z})$.
 
 \subsection{Expectation propagation algorithm}
 For the concrete EP algorithm we consider a model of hidden variables and parameters $\theta$ and observed data $\mathbf{D}$. Similarly to the previous chapter we assume that the joint distribution can be written as a product of factors $f_i$. However, one factor is not restricted to depend on only a subset of variables here, but has all latent variables and parameters (together represented by $\theta$) as its arguments.
@@ -369,9 +369,9 @@ Whereas general expectation propagation allows the factors of the joint distribu
 \begin{equation}\label{eq:ep9}
 p(\theta|\mathbf{D}) = \frac{1}{p(\mathbf{D})} \prod_i f_i(\theta_i),
 \end{equation}
-An interesting property gets visible if we use a fully factorized approximation function: Then, the EP algorithm becomes equal the sum-product algorithm. In other words, the sum-product algorithm turns out to be a special case of expectation propagation, if using fully independent variables in the approximation function.
+An interesting property gets visible if we use a fully factorized approximation function: Then, the EP algorithm becomes equal the "Sum-Product" algorithm. In other words, the "Sum-Product" algorithm turns out to be a special case of expectation propagation, if using fully independent variables in the approximation function.
 
-With respect to the approximation function of the EP algorithm an interpretation can be formulated: Since the sum-product algorithm is an exact inference algorithm, a more flexible approximation function compared to the underlying model (as for example one with a few dependency connections in the graph left out) can increase the accuracy.
+With respect to the approximation function of the EP algorithm an interpretation can be formulated: Since the "Sum-Product" algorithm is an exact inference algorithm, a more flexible approximation function compared to the underlying model (as for example one with a few dependency connections in the graph left out) can increase the accuracy.
 
 Another approach to incorporate some extent of generalization to expectation propagation is to refine a set of factors together within one iteration of the algorithm. However, for both methods there are still open research question how to find the best amount of independence for the approximation function of EP as well as the optimal grouping of factors for simultaneous refinement.
 
@@ -391,7 +391,7 @@ Another aspect leading to conceptually different behavior between expectation pr
 	\end{center}
 \end{figure}
 \section{Summary and outlook}
-In summary, message passing as well as expectation propagation are useful inference methods. If the underlying graphical model is a tree, the max-sum and sum-product algorithm compute exact results in an efficient way.
+In summary, message passing as well as expectation propagation are useful inference methods. If the underlying graphical model is a tree, the "Max-Sum" and "Sum-Product" algorithm compute exact results in an efficient way.
 
 For general models, there exist different approaches for approximate inference. Methods like loopy belief propagation or linearized belief propagation generalize the concept of message passing to arbitrary graphs. Expectation propagation follows an approach similar to variational inference and tries to find an approximation of the true distribution by minimizing the KL divergence.
 However, none of these methods is in general superior. Depending on the concrete problem setting, either of the presented method can produce more accurate results.
