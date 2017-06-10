@@ -9,7 +9,7 @@
 
 
 \title{Message Passing and Expectation Propagation}
-\subtitle{Efficient Inference in large scale machine learning}
+\subtitle{Efficient Inference in Large-Scale Machine Learning}
 \numberofauthors{1}
 \author{
 \alignauthor Christoph Dehner \\
@@ -24,13 +24,13 @@
 
 % Abstract
 \begin{abstract}
-This paper explains two efficient Bayesian inference methods basing on a factorized version of a joint probability distribution. The two message passing algorithms "Max-Sum" and Sum-Product" enable exact inference in tree-shaped graphical models. The underlying concept of message passing can also be generalized to arbitrary graphs.
+This paper explains two efficient Bayesian inference methods basing on a factorized version of a joint probability distribution. The two message passing algorithms "Max-Sum" and "Sum-Product" enable exact inference in tree-shaped graphical models. The underlying concept of message passing can also be generalized to arbitrary graphs.
 
-By expectation propagation a second approximate inference technique is covered. Similarly to variational inference it aims at minimizing the KL divergence of an approximating distribution. This is done in an iterative way leading to a useful approximate inference method for many situations.
+By expectation propagation a second, approximate inference technique is covered. Similarly to variational inference it aims at minimizing the KL divergence of an approximating distribution. This is done in an iterative way leading to a useful approximate inference method for many situations.
 \end{abstract}
 
 \section{Introduction}
-Probabilistic graphical models like Markov Random Fields or Bayesian Networks provide clear and illustrative ways to describe probabilistic processes. In such models, nodes represent random variables and edges their conditional dependencies. The joint distribution of all involved variables can be expressed as a product of factors, which are observed or given specific values during modeling. As an example, a Bayesian network with three variables is given in figure \ref{fig:BN}. It defines the values of $x_1$ and $x_3$ to be conditionally independent given $x_2$.
+Probabilistic graphical models like Markov random fields or Bayesian networks provide clear and illustrative ways to describe probabilistic processes. In such models, nodes represent random variables and edges their conditional dependencies. The joint distribution of all involved variables can be expressed as a product of factors, which are observed or given specific values during modeling. As an example, a Bayesian network with three variables is given in figure \ref{fig:BN}. It defines the values of $x_1$ and $x_3$ to be conditionally independent given $x_2$.
 \begin{figure}[h]
 	\centering
 	\begin{tikzpicture}
@@ -48,7 +48,7 @@ Probabilistic graphical models like Markov Random Fields or Bayesian Networks pr
 	\caption{Bayesian network with three variables. $x_1$ and $x_3$ are conditionally independent given $x_2$.}\label{fig:BN}
 \end{figure}
 
-Typical tasks in such a scenario are to do Bayesian inference to extract marginal distributions of specific variables or find maximum a posteriori estimates. However, with an increasing number of variables these task can become computationally very expensive. 
+Typical tasks in such a scenario are to do Bayesian inference to extract marginal distributions of specific variables or to find maximum a posteriori estimates. However, with an increasing number of variables these task can become computationally very expensive. 
 
 The naive approach for marginalization is to sum out all but one variable from the joint distribution $p(X)$. This is formally shown in equation \ref{eq:marginalisation_naive}, where $X \setminus x_i$ describes the set of all random variables except $x_i$.
 This strategy requires exponentially many evaluations of the joint distribution in the number of variables and is thus not applicable to bigger networks.
@@ -57,10 +57,10 @@ p(x_i)= \sum_{X \setminus x_i} p(X)
 \end{equation}
 Therefore, this paper explains more efficient algorithms to do large scale Bayesian inference in graphical models. 
 
-Before the different inference approaches are explained in detail, the next chapter \ref{chapter:fg} introduces factor graphs, the structure these algorithms operate on. Then, chapter \ref{chapter:exact_inference} deals with message passing and presents two belief propagation algorithms to calculate exact marginals and maximum a posteriori estimates for tree-shaped graphical models. Furthermore, generalized message passing approaches for arbitrary graphs are presented at the end of the chapter. Subsequently, in chapter \ref{chapter:approximate_inference} expectation propagation as a method of approximate inference is explained.
+Before the different inference approaches are explained in detail, the next chapter \ref{chapter:fg} introduces factor graphs, the structure these algorithms operate on. Chapter \ref{chapter:exact_inference} deals with message passing and presents two belief propagation algorithms to calculate exact marginals and maximum a posteriori estimates for tree-shaped graphical models. Furthermore, generalized message passing approaches for arbitrary graphs are presented at the end of the chapter. Subsequently, in chapter \ref{chapter:approximate_inference} expectation propagation as a method of approximate inference is explained.
 
 \section{Factor graphs}\label{chapter:fg}
-Factor graphs make the factorization of a joint probability distribution explicit. The can be generated from Bayesian networks as well as from Markov random fields and thus allow to define inference algorithms independent of how the underlying probabilistic graphical model was introduced.
+Factor graphs make the factorization of a joint probability distribution explicit. The can be generated from Bayesian  etworks as well as from Markov random fields and thus allow to define inference algorithms independent of how the underlying probabilistic graphical model was introduced.
 
 Additional to the variable nodes, a factor graph also consists of factor nodes representing the factors of the decomposed joint probability distribution as in equation  \ref{eq:product_of_factors}. Edges connect the factor nodes to all variables they depend on. By this way they form a bipartite graph with variable nodes (usually visualizes by circles) on the one side and and factors (depicted as rectangles) on the other side.
 
@@ -91,10 +91,10 @@ Depending on the exact factorization, a distribution defined by a Bayesian netwo
 	\caption{Factor graph of the Bayesian network from figure \ref{fig:BN}. The factors $f_1$, $f_2$ and $f_3$ correspond to the probability distributions $p(x_1)$, $p(x_2|x_1)$ and $p(x_3|x_2$.)}\label{fig:FG}
 \end{figure}
 
-The inference algorithms on factor graphs of the following section are valid for trees. Such factor graphs with exactly one path between any pair of nodes can be generated from Markov random fields and Bayesian networks, if the underlying graph of the model is also structured as a tree. More detailed descriptions of how to derive factor graph from probabilistic graph models can be found in \cite{bishop2006prml}.\footnote{Chapter 8.3.2 for the moralization step of undirected models and chapter 8.4.3 for the concrete buildup of a factor graph from a graphical model.}
+The inference algorithms on factor graphs of the following section are valid for trees. Such factor graphs with exactly one path between any pair of nodes can be generated from Markov random fields and Bayesian networks, if the underlying graph of the model has also tree structure. More detailed descriptions of how to derive factor graph from probabilistic graphical models can be found in \cite{bishop2006prml}.\footnote{Chapter 8.3.2 for the moralization step of undirected models and chapter 8.4.3 for the concrete buildup of a factor graph from a graphical model.}
 
 \section{Message passing}\label{chapter:exact_inference}
-The intuition of the algorithms presented in this section is to exploit independence properties of the random variables. Graphical models define the joint probability to be expressed as a product of factors, considering the conditional independences expressed by the graph. For Bayesian networks those factors correspond to conditional distributions, in Markov Random Fields to clique potentials. Assuming appropriately normalized factors, the joint distribution can be written as a product according to equation \ref{eq:product_of_factors}. The index $s$ iterates here over all factors of the graph; $X_s$ defines the subset of variables, the factor $s$ depends on.
+The intuition of the algorithms presented in this section is to exploit independence properties of the random variables. Graphical models define the joint probability to be expressed as a product of factors, considering the conditional independences expressed by the graph. For Bayesian networks those factors correspond to conditional distributions, in Markov random fields to clique potentials. Assuming appropriately normalized factors, the joint distribution can be written as a product according to equation \ref{eq:product_of_factors}. The index $s$ iterates here over all factors of the graph; $X_s$ defines the subset of variables, the factor $s$ depends on.
 \begin{equation}\label{eq:product_of_factors}
 p(X)= \prod_{s} f_s(X_s)
 \end{equation}
@@ -164,7 +164,7 @@ The factors $F_s(x,X_s)$ represent subtrees in the factor graph and can thus be 
 \begin{equation}\label{eq:product2}
 F_s(x_i,X_s) = f_s(x_i, X_s) G_1(x_1, X_{s_1})\dots G_1(x_M, X_{s_M}).
 \end{equation}
-The factors $G_1(x_1, X_{s_1})\dots G_1(x_M, X_{s_M})$ represent here the subgraphs of all neighbors of $f_s$ except from $x_i$ and are illustrated by red circles in figure \ref{fig:message2}.
+The factors $G_1(x_1, X_{s_1}),\dots , G_M(x_M, X_{s_M})$ represent here the subgraphs of all neighbors of $f_s$ except from $x_i$ and are illustrated by red circles in figure \ref{fig:message2}.
 
 \begin{figure}[h]
 	\centering
@@ -261,10 +261,10 @@ Similarly, from equation \ref{eq:message2} then concludes the initial value
 \end{equation}
 for a message from a leaf factor node to its neighboring variable node.
 
-Having explicit start values for messages from the leaves, messages can propagated through the factor graphs to an arbitrarily chosen root node. This root node has then received messages from all its neighbors and can thus calculate its marginal distribution according to \ref{eq:message1}. Analogously, passing all messages back from the root to all leaf nodes enables to calculate the marginals of all variables in the factor graph. During this calculation two messages are sent via each edge edge of the factor graph. The computational effort is thus linear in the number of edges and therefore also linear in the number of variables of the model.\\
+Having explicit start values for messages from the leaves, messages can propagated through the factor graphs to an arbitrarily chosen root node. This root node has then received messages from all its neighbors and can thus calculate its marginal distribution according to equation \ref{eq:message1}. Analogously, passing all messages back from the root to all leaf nodes enables to calculate the marginals of all variables in the factor graph. During this calculation two messages are sent via each edge edge of the factor graph. The computational effort is thus linear in the number of edges and therefore also linear in the number of variables of the model.\\
 
 \subsection{"Max-Sum" algorithm}
-Next to computing marginal distributions, a frequent task is to find maximum a posteriori estimates. The aim is to finding values for all random variables, which maximize the joint probability distribution. This can be formulated mathematically as
+Next to computing marginal distributions, a frequent task is to find maximum a posteriori estimates. The aim is to find values for all random variables, which maximize the joint probability distribution. This can be formulated mathematically as
 \begin{equation}\label{eq:map_problem}
 X^* = \underset{X}{\arg\max}~ p(X) = \underset{X}{\arg\max}~ \ln (p(X)).
 \end{equation}
@@ -300,17 +300,17 @@ Also the message initializations for leaf nodes from equation \ref{eq:marg_init_
 \end{equation}
 By propagating messages from all leaf nodes to an arbitrarily chosen root node, the maximal value of the joint probability distribution can be calculated in that root node. The message passing is again done in a fashion, that a node can forward its message to its parent node as soon it has received messages from all children.
 
-The missing step is to find the variable configuration for the maximal joint probability. The central maximization is performed in equation \ref{eq:map_m1} over the variables of each factor before its message is passed further to the root. By saving the maximal configuration of each factor at this step, the values of the variables which give rise to the maximal joint probability can be obtained. In contrast to the "Sum-Product" algorithm, the "Max-Sum" algorithm does not require to propagate messages back from the root to all leaves.
+Having achieved that, the missing step is to find the variable configuration for the maximal joint probability. The central maximization is performed in equation \ref{eq:map_m1} over the variables of each factor before its message is passed further to the root. By saving the maximal configuration of each factor at this step, the values of the variables which give rise to the maximal joint probability can be obtained. In contrast to the "Sum-Product" algorithm, the "Max-Sum" algorithm does not require to propagate messages back from the root to all leaves.
 
 \subsection{Discussion}
 The two algorithms require a fixed number of passes through the graph. Thus their computational complexity depends on the number of edges, which increases linearly with the number of involved random variables. Next to this factor, the computational cost of the two algorithms also consists a polynomial factor in the number of values, the discrete random variables can take.
 
-The big disadvantage of the "Sum-Product" and "Max-Sum" algorithms is that they only work on trees-shaped graphical models. To overcome this, the next section presents approaches to overcome this and do inference via message passing in general graphs.
+The big disadvantage of the "Sum-Product" and "Max-Sum" algorithms is that they only work on trees-shaped graphical models. The next section presents approaches to overcome this and do inference via message passing in general graphs.
 
 \subsection{Inference via message passing in general graphs}
 The discussed inference methods only produce valid results for trees. However, since the algorithms only consist of local messages passed through the graph, they can also be applied to graphs which contain circles. This is called "loopy belief propagation". For that, all messages need to be initialized by the unit function and a message passing schedule must be defined to state the order in which the messages are passed through the graph. Then, local messages can be passed through the graph multiple times until marginals or maximum a posteriori estimates can be extracted.
 
-With circles in the graph, loopy belief propagation is not guaranteed to converge. Messages can also start to oscillate or converge to wrong values. In some situations loopy belief propagation produces only poor results, while in other situations the final outcome turned out to be quite accurate. Certain error-correcting codes for example are equivalent to loopy belief propagation.
+With circles in the graph, loopy belief propagation is not guaranteed to converge. Messages can also start to oscillate or converge to wrong values. In some situations loopy belief propagation produces only poor results, while in other situations the final outcome is quite accurate. Certain error-correcting codes for example are equivalent to loopy belief propagation.
 
 There are also algorithms, which generalize the message passing idea to work for arbitrary graphs. The junction tree algorithm resolves circles in a general graph by a triangulation step and extraction of a maximal spanning tree. Depending on the underlying graph the algorithm requires exponential effort, but is efficient from the perspective that there are generally no cheaper approaches for exact inference in arbitrary graphs.
 
@@ -330,7 +330,7 @@ must be chosen. With that the KL divergence becomes
 \begin{equation}\label{eq:ep2}
 KL(p||q)= - \ln g(\eta) - \eta^T \mathbf{E}_{p(\mathbf{z})} [u(\mathbf{z})] + const.
 \end{equation}
-The distribution $q(\mathbf{z})$, which minimizes this KL divergence from equation \ref{eq:ep2}, can be constructed by moment matching. Formulated differently, the distribution $q(\mathbf{z})$ from the exponential family, whose the natural parameters are equal to the moments of the true distribution $p(\mathbf{z})$ we want to approximate, minimizes the KL divergence from equation \ref{eq:ep2}. If $q(\mathbf{z})$ is a Gaussian for example, its optimal mean corresponds to the mean of $p(\mathbf{z})$ and its optimal covariance is equal to the covariance of $p(\mathbf{z})$.
+The distribution $q(\mathbf{z})$, which minimizes this KL divergence from equation \ref{eq:ep2}, can be constructed by moment matching. Formulated differently, the distribution $q(\mathbf{z})$ from the exponential family, whose the natural parameters are equal to the moments of the true distribution $p(\mathbf{z})$, minimizes the KL divergence from equation \ref{eq:ep2}. If $q(\mathbf{z})$ is a Gaussian for example, its optimal mean corresponds to the mean of $p(\mathbf{z})$ and its optimal covariance is equal to the covariance of $p(\mathbf{z})$.
 
 \subsection{Expectation propagation algorithm}
 For the concrete EP algorithm we consider a model of hidden variables and parameters $\theta$ and observed data $\mathbf{D}$. Similarly to the previous chapter we assume that the joint distribution can be written as a product of factors $f_i$. However, one factor is not restricted to depend on only a subset of variables here, but has all latent variables and parameters (together represented by $\theta$) as its arguments.
@@ -396,9 +396,9 @@ In summary, message passing as well as expectation propagation are useful infere
 For general models, there exist different approaches for approximate inference. Methods like loopy belief propagation or linearized belief propagation generalize the concept of message passing to arbitrary graphs. Expectation propagation follows an approach similar to variational inference and tries to find an approximation of the true distribution by minimizing the KL divergence.
 However, none of these methods is in general superior. Depending on the concrete problem setting, either of the presented method can produce more accurate results.
 
-There is also ongoing research about the discussed approaches, especially for message passing. \cite{Gatterbauer:2015:LSB:2735479.2735490} does not only present a linearized belief propagation but also shows an incremental version. Furthermore it describes a single-pass variation, in which only one message for each node is calculated.
+There is also ongoing research about the discussed approaches, especially for message passing. In \cite{Gatterbauer:2015:LSB:2735479.2735490} the authors do not only present a linearized belief propagation but also show an incremental version. Furthermore they describe a single-pass variation, in which only one message for each node is calculated.
 
-Finally, as second outlook \cite{wayoflife} is presented. It considers Bayesian inference methods like expectation propagation on partitioned data. By this way, such inference methods could be applied to big data.
+Finally, as second outlook the paper \cite{wayoflife} is pointed out to. It considers Bayesian inference methods like expectation propagation on partitioned data. By this way, such inference methods could be applied to big data.
 
 
 % Bibliography
