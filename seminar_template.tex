@@ -55,11 +55,11 @@ This strategy requires exponentially many evaluations of the joint distribution 
 \begin{equation}\label{eq:marginalisation_naive}
 p(x_i)= \sum_{X \setminus x_i} p(X)
 \end{equation}
-Therefore, this paper explains more efficient algorithms to do large scale Bayesian inference in graphical models. Chapter \ref{chapter:exact_inference} deals with message passing and presents two belief propagation algorithms to calculate exact marginals and maximum a posteriori estimates for tree-shaped graphical models. Furthermore, generalized message passing approaches for arbitrary graphs are presented at the end of the chapter. Subsequently, in chapter \ref{chapter:approximate_inference} expectation propagation as a method of approximate inference is explained.
+Therefore, this paper explains more efficient algorithms to do large scale Bayesian inference in graphical models. 
 
-Before the different inference approaches are explained in detail, the next section introduces factor graphs, the structure these algorithms operate on.
+Before the different inference approaches are explained in detail, the next chapter \ref{chapter:fg} introduces factor graphs, the structure these algorithms operate on. Then, chapter \ref{chapter:exact_inference} deals with message passing and presents two belief propagation algorithms to calculate exact marginals and maximum a posteriori estimates for tree-shaped graphical models. Furthermore, generalized message passing approaches for arbitrary graphs are presented at the end of the chapter. Subsequently, in chapter \ref{chapter:approximate_inference} expectation propagation as a method of approximate inference is explained.
 
-\section{Factor graphs}
+\section{Factor graphs}\label{chapter:fg}
 Factor graphs make the factorization of a joint probability distribution explicit. The can be generated from Bayesian networks as well as from Markov random fields and thus allow to define inference algorithms independent of how the underlying probabilistic graphical model was introduced.
 
 Additional to the variable nodes, a factor graph also consists of factor nodes representing the factors of the decomposed joint probability distribution as in equation  \ref{eq:product_of_factors}. Edges connect the factor nodes to all variables they depend on. By this way they form a bipartite graph with variable nodes (usually visualizes by circles) on the one side and and factors (depicted as rectangles) on the other side.
@@ -91,7 +91,7 @@ Depending on the exact factorization, a distribution defined by a Bayesian netwo
 	\caption{Factor graph of the Bayesian network from figure \ref{fig:BN}. The factors $f_1$, $f_2$ and $f_3$ correspond to the probability distributions $p(x_1)$, $p(x_2|x_1)$ and $p(x_3|x_2$.)}\label{fig:FG}
 \end{figure}
 
-The inference algorithms on factor graphs of the following section are valid for trees. Such factor graphs with exactly one path between any pair of nodes can be generated from undirected trees in the case of a Markov random field model as well as from from directed trees and polytrees, if the factor graph is derived from a Bayesian network. More detailed descriptions of how to derive factor graph from probabilistic graph models can be found in \cite{bishop2006prml}.\footnote{Chapter 8.3.2 for the moralization step of undirected models and chapter 8.4.3 for the concrete buildup of a factor graph from a graphical model.}
+The inference algorithms on factor graphs of the following section are valid for trees. Such factor graphs with exactly one path between any pair of nodes can be generated from Markov random fields and Bayesian networks, if the underlying graph of the model is also structured as a tree. More detailed descriptions of how to derive factor graph from probabilistic graph models can be found in \cite{bishop2006prml}.\footnote{Chapter 8.3.2 for the moralization step of undirected models and chapter 8.4.3 for the concrete buildup of a factor graph from a graphical model.}
 
 \section{Message passing}\label{chapter:exact_inference}
 The intuition of the algorithms presented in this section is to exploit independence properties of the random variables. Graphical models define the joint probability to be expressed as a product of factors, considering the conditional independences expressed by the graph. For Bayesian networks those factors correspond to conditional distributions, in Markov Random Fields to clique potentials. Assuming appropriately normalized factors, the joint distribution can be written as a product according to equation \ref{eq:product_of_factors}. The index $s$ iterates here over all factors of the graph; $X_s$ defines the subset of variables, the factor $s$ depends on.
@@ -250,8 +250,8 @@ Inserting this factorization into the definition of $\mu_{x_m \rightarrow f_s}(x
     \end{split}
 \end{equation}
 
-We have now induced how a marginal distribution $p(x_i)$ can be expressed by local messages passed between factors and variables through the factor graph. For leave nodes those messages can be stated explicitly.
-In case a variable node is leave of the factor graph, equation \ref{eq:message3} shows that the message, the node sends to its only neighbor, is given by
+We have now induced how a marginal distribution $p(x_i)$ can be expressed by local messages passed between factors and variables through the factor graph. For leaf nodes those messages can be stated explicitly.
+In case a variable node is leaf of the factor graph, equation \ref{eq:message3} shows that the message, the node sends to its only neighbor, is given by
 \begin{equation}\label{eq:marg_init_1}
 \mu_{x \rightarrow f}(x) = 1.
 \end{equation}
@@ -259,9 +259,9 @@ Similarly, from equation \ref{eq:message2} then concludes the initial value
 \begin{equation}\label{eq:marg_init_2}
 \mu_{f \rightarrow x}(x) = f(x)
 \end{equation}
-for a message from a leave factor node to its neighboring variable node.
+for a message from a leaf factor node to its neighboring variable node.
 
-Having explicit start values for messages from the leaves, messages can propagated through the factor graphs to an arbitrarily chosen root node. This root node has then received messages from all its neighbors and can thus calculate its marginal distribution according to \ref{eq:message1}. Analogously, passing all messages back from the root to all leave nodes enables to calculate the marginals of all variables in the factor graph. For this calculation two times the number of edges in the factor graph many messages have to be computed, which is linear in the number of variables of the model.\\
+Having explicit start values for messages from the leaves, messages can propagated through the factor graphs to an arbitrarily chosen root node. This root node has then received messages from all its neighbors and can thus calculate its marginal distribution according to \ref{eq:message1}. Analogously, passing all messages back from the root to all leaf nodes enables to calculate the marginals of all variables in the factor graph. During this calculation two messages are sent via each edge edge of the factor graph. The computational effort is thus linear in the number of edges and therefore also linear in the number of variables of the model.\\
 
 \subsection{"Max-Sum" algorithm}
 Next to computing marginal distributions, a frequent task is to find maximum a posteriori estimates. The aim is to finding values for all random variables, which maximize the joint probability distribution. This can be formulated mathematically as
@@ -291,14 +291,14 @@ Applying all discussed modification to the formulas deduced in the last chapter 
 \end{split}
 \end{equation}
 
-Also the message initializations for leave nodes from equation \ref{eq:marg_init_1} and \ref{eq:marg_init_2} must be adjusted with the logarithm, resulting in
+Also the message initializations for leaf nodes from equation \ref{eq:marg_init_1} and \ref{eq:marg_init_2} must be adjusted with the logarithm, resulting in
 \begin{equation}\label{eq:marg_init2_1}
 \mu_{x \rightarrow f}(x) = 0,
 \end{equation}
 \begin{equation}\label{eq:marg_init2_2}
 \mu_{f \rightarrow x}(x) = \ln(f(x)).
 \end{equation}
-By propagating messages from all leave nodes to an arbitrarily chosen root node, the maximal value of the joint probability distribution can be calculated in that root node. The message passing is again done in a fashion, that a node can forward its message to its parent node as soon it has received messages from all children.
+By propagating messages from all leaf nodes to an arbitrarily chosen root node, the maximal value of the joint probability distribution can be calculated in that root node. The message passing is again done in a fashion, that a node can forward its message to its parent node as soon it has received messages from all children.
 
 The missing step is to find the variable configuration for the maximal joint probability. The central maximization is performed in equation \ref{eq:map_m1} over the variables of each factor before its message is passed further to the root. By saving the maximal configuration of each factor at this step, the values of the variables which give rise to the maximal joint probability can be obtained. In contrast to the "Sum-Product" algorithm, the "Max-Sum" algorithm does not require to propagate messages back from the root to all leaves.
 
