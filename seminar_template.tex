@@ -19,6 +19,7 @@
 }
 \counterwithout{equation}{section}
 
+\sloppy
 \begin{document}
 \maketitle
 
@@ -201,6 +202,7 @@ The factors $G_1(x_1, X_{s_1}),\dots , G_M(x_M, X_{s_M})$ represent here the sub
 
 With that, the messages defined in equation \ref{eq:message1} can be further evaluated to
 \begin{equation}\label{eq:message2}
+\thinmuskip=0mu
 \begin{split}
 \mu_{f_s \rightarrow x_i}(x_i) &= \sum_{X_s \setminus x_i} f_s(x_i, X_s) \prod_{m \in ne(f_s) \setminus x_i} \Big[ \sum_{{X_s}_m} G_m(x_m, {X_s}_m)  \Big] \\ &= \sum_{\mathbf{x_s} \setminus x_i} f_s(x_i, X_s) \prod_{m \in ne(f_s) \setminus x_i} \mu_{x_m \rightarrow f_s}(x_m).
 \end{split}
